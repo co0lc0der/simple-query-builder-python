@@ -1,6 +1,6 @@
 #MIT License
 
-Copyright (c) 2021 Michael aka co0LC0Der <c0der@ya.ru>
+Copyright (c) 2022 Michael aka co0LC0Der <c0der@ya.ru>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
