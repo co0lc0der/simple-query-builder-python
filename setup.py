@@ -9,13 +9,13 @@ from setuptools import setup
 :copyright: (c) 2022 co0lc0der
 """
 
-version = '0.3.1'
+version = '0.3.2'
 
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='simple-query-builder',
+    name='simple_query_builder',
     version=version,
 
     author='co0lc0der',
@@ -36,7 +36,7 @@ setup(
 
     license='MIT',
 
-    packages=['simple-query-builder'],
+    packages=['simple_query_builder'],
 
     classifiers=[
         'Topic :: Database',
