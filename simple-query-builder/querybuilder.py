@@ -1,6 +1,6 @@
 """
 :authors: co0lc0der
-:license: MIT License, see LICENSE file
+:license: MIT
 :copyright: (c) 2022 co0lc0der
 """
 

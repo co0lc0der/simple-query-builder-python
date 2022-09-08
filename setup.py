@@ -5,7 +5,7 @@ from setuptools import setup
 
 """
 :authors: co0lc0der
-:license: MIT, see LICENSE file
+:license: MIT
 :copyright: (c) 2022 co0lc0der
 """
 
@@ -34,11 +34,13 @@ setup(
         version
     ),
 
-    license='MIT, see LICENSE.md file',
+    license='MIT',
 
     packages=['simple-query-builder'],
 
     classifiers=[
+        'Topic :: Database',
+        'Topic :: Database :: Database Engines/Servers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Intended Audience :: End Users/Desktop',
@@ -51,5 +53,6 @@ setup(
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: SQL'
     ]
 )
