@@ -9,7 +9,7 @@ from setuptools import setup
 :copyright: (c) 2022 co0lc0der
 """
 
-version = '0.3.0'
+version = '0.3.1'
 
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
@@ -37,7 +37,6 @@ setup(
     license='MIT, see LICENSE.md file',
 
     packages=['simple-query-builder'],
-    install_requires=['sqlite3', 'Union'],
 
     classifiers=[
         'License :: OSI Approved :: MIT License',
