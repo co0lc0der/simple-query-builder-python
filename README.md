@@ -1,6 +1,10 @@
 # QueryBuilder python module
 
-![PyPI](https://img.shields.io/pypi/v/simple-query-builder?color=orange) ![Python 3.7, 3.8, 3.9, 3.10](https://img.shields.io/pypi/pyversions/simple-query-builder?color=blueviolet) ![GitHub Pull Requests](https://img.shields.io/github/issues-pr/co0lc0der/simple-query-builder-python?color=blueviolet) ![License](https://img.shields.io/pypi/l/simple-query-builder?color=blueviolet) ![Forks](https://img.shields.io/github/forks/co0lc0der/simple-query-builder-python?style=social)
+![PyPI](https://img.shields.io/pypi/v/simple-query-builder?color=yellow&style=flat-square)
+[![Latest Version](https://img.shields.io/github/release/co0lc0der/simple-query-builder-python?color=orange&style=flat-square)](https://github.com/co0lc0der/simple-query-builder-python/release)
+![GitHub repo size](https://img.shields.io/github/repo-size/co0lc0der/simple-query-builder-python?label=size&style=flat-square)
+![Python 3.7, 3.8, 3.9, 3.10](https://img.shields.io/pypi/pyversions/simple-query-builder?color=blueviolet&style=flat-square)
+[![GitHub license](https://img.shields.io/github/license/co0lc0der/simple-query-builder-python?style=flat-square)](https://github.com/co0lc0der/simple-query-builder-python/blob/main/LICENSE.md)
 
 This is a small easy-to-use component for working with a database. It provides some public methods to compose SQL queries and manipulate data. Each SQL query is prepared and safe. QueryBuilder fetches data to _list_ by default. At present time the component supports SQLite (file or memory).
 
@@ -10,7 +14,7 @@ Bug reports and/or pull requests are welcome
 
 ## License
 
-The module is available as open source under the terms of the [MIT](https://github.com/co0lc0der/simple-query-builder-python/blob/main/LICENSE.md)
+The module is available as open source under the terms of the [MIT license](https://github.com/co0lc0der/simple-query-builder-python/blob/main/LICENSE.md)
 
 ## Installation
 
