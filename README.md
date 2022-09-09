@@ -1,6 +1,7 @@
 # QueryBuilder python module
 
 ![PyPI](https://img.shields.io/pypi/v/simple-query-builder?color=yellow&style=flat-square)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/simple-query-builder?color=darkgreen&style=flat-square)
 [![Latest Version](https://img.shields.io/github/release/co0lc0der/simple-query-builder-python?color=orange&style=flat-square)](https://github.com/co0lc0der/simple-query-builder-python/release)
 ![GitHub repo size](https://img.shields.io/github/repo-size/co0lc0der/simple-query-builder-python?label=size&style=flat-square)
 ![Python 3.7, 3.8, 3.9, 3.10](https://img.shields.io/pypi/pyversions/simple-query-builder?color=blueviolet&style=flat-square)
@@ -32,19 +33,19 @@ pip install https://github.com/co0lc0der/simple-query-builder-python/archive/mai
 ### Main public methods
 - `get_sql()` returns SQL query string which will be executed
 - `get_params()` returns an array of parameters for a query
-- `get_result()` returns query's results
-- `get_count()` returns results' rows count
+- `get_result()` returns query's result
+- `get_count()` returns result's rows count
 - `get_error()` returns `True` if an error is had
 - `get_error_message()` returns an error message if an error is had
 - `set_error(message)` sets `_error` to `True` and `_error_essage`
 - `get_first()` returns the first item of results
 - `get_last()` returns the last item of results
 - `reset()` resets state to default values (except PDO property)
-- `all()` executes SQL query and return all rows of result (`fetchall()`)
-- `one()` executes SQL query and return the first row of result (`fetchone()`)
-- `column(col_index)` executes SQL query and return the first column of result, `col_index` is `0` by default
-- `go()` this method is for non `SELECT` queries. it executes SQL query and return nothing (but returns the last inserted row ID for `INSERT` method)
-- `count()` prepares a query with SQL `COUNT()` function
+- `all()` executes SQL query and returns all rows of result (`fetchall()`)
+- `one()` executes SQL query and returns the first row of result (`fetchone()`)
+- `column(col_index)` executes SQL query and returns the first column of result, `col_index` is `0` by default
+- `go()` this method is for non `SELECT` queries. it executes SQL query and returns nothing (but returns the last inserted row ID for `INSERT` method)
+- `count()` prepares a query with SQL `COUNT(*)` function and executes it
 - `query(sql, params, fetch_type, col_index)` executes prepared `sql` with `params`, it can be used for custom queries
 - 'SQL' methods are presented in [Usage section](#usage-examples)
 
