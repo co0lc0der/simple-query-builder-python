@@ -7,7 +7,7 @@
 ![Python 3.7, 3.8, 3.9, 3.10](https://img.shields.io/pypi/pyversions/simple-query-builder?color=blueviolet&style=flat-square)
 [![GitHub license](https://img.shields.io/github/license/co0lc0der/simple-query-builder-python?style=flat-square)](https://github.com/co0lc0der/simple-query-builder-python/blob/main/LICENSE.md)
 
-This is a small easy-to-use component for working with a database. It provides some public methods to compose SQL queries and manipulate data. Each SQL query is prepared and safe. QueryBuilder fetches data to _list_ by default. At present time the component supports SQLite (file or memory).
+This is a small easy-to-use module for working with a database. It provides some public methods to compose SQL queries and manipulate data. Each SQL query is prepared and safe. QueryBuilder fetches data to _list_ by default. At present time the component supports SQLite (file or memory).
 
 ## Contributing
 
@@ -72,12 +72,10 @@ SELECT * FROM `users` WHERE `id` = 10;
 ```
 - Select rows with two conditions
 ```python
-results = qb.select('users')\
-    .where([['id', '>', 1], 'and', ['group_id', '=', 2]])\
-    .all()
+results = qb.select('users').where([['id', '>', 1], 'and', ['group_id', '=', 2]]).all()
 ```
 ```sql
-SELECT * FROM `users` WHERE (`id` > 1) AND (`group_id` = 2)
+SELECT * FROM `users` WHERE (`id` > 1) AND (`group_id` = 2);
 ```
 - Select a row with a `LIKE` and `NOT LIKE` condition
 ```python
@@ -86,7 +84,7 @@ results = qb.select('users').like(['name', '%John%']).all()
 results = qb.select('users').where([['name', 'LIKE', '%John%']]).all()
 ```
 ```sql
-SELECT * FROM `users` WHERE (`name` LIKE '%John%')
+SELECT * FROM `users` WHERE (`name` LIKE '%John%');
 ```
 ```python
 results = qb.select('users').notLike(['name', '%John%']).all()
@@ -94,7 +92,7 @@ results = qb.select('users').notLike(['name', '%John%']).all()
 results = qb.select('users').where([['name', 'NOT LIKE', '%John%']]).all()
 ```
 ```sql
-SELECT * FROM `users` WHERE (`name` NOT LIKE '%John%')
+SELECT * FROM `users` WHERE (`name` NOT LIKE '%John%');
 ```
 - Select rows with `OFFSET` and `LIMIT`
 ```python
@@ -150,7 +148,7 @@ groups = qb.select('orders', {'month_num': 'MONTH(`created_at`)', 'total': 'SUM(
 ```sql
 SELECT MONTH(`created_at`) AS `month_num`, SUM(`total`) AS `total`
 FROM `orders` WHERE (YEAR(`created_at`) = 2020)
-GROUP BY `month_num` HAVING (`total` > 20000)
+GROUP BY `month_num` HAVING (`total` > 20000);
 ```
 4. `JOIN`. Supports `INNER`, `LEFT OUTER`, `RIGHT OUTER`, `FULL OUTER` and `CROSS` joins (`INNER` is by default)
 ```python
@@ -193,7 +191,7 @@ FROM `cabs_printers` AS `cp`
 INNER JOIN `cabs` AS `cb` ON `cp`.`cab_id` = `cb`.`id`
 INNER JOIN `printer_models` AS `p` ON `cp`.`printer_id` = `p`.`id`
 INNER JOIN `cartridge_types` AS `c` ON p.cartridge_id=c.id
-WHERE (`cp`.`cab_id` IN (11,12,13)) OR (`cp`.`cab_id` = 5) AND (`p`.`id` > `c`.`id`)
+WHERE (`cp`.`cab_id` IN (11,12,13)) OR (`cp`.`cab_id` = 5) AND (`p`.`id` > `c`.`id`);
 ```
 - Insert a row
 ```python
@@ -203,7 +201,7 @@ new_id = qb.insert('groups', {
 }).go()
 ```
 ```sql
-INSERT INTO `groups` (`name`, `permissions`) VALUES ('Moderator', 'moderator')
+INSERT INTO `groups` (`name`, `permissions`) VALUES ('Moderator', 'moderator');
 ```
 - Insert many rows
 ```python
@@ -219,7 +217,7 @@ INSERT INTO `groups` (`name`, `role`)
 VALUES ('Moderator', 'moderator'),
        ('Moderator2', 'moderator'),
        ('User', 'user'),
-       ('User2', 'user')
+       ('User2', 'user');
 ```
 - Update a row
 ```python
@@ -243,7 +241,7 @@ qb.update('posts', {'status': 'published'})\
 ```
 ```sql
 UPDATE `posts` SET `status` = 'published'
-WHERE (YEAR(`updated_at`) > 2020)
+WHERE (YEAR(`updated_at`) > 2020);
 ```
 - Delete a row
 ```python
