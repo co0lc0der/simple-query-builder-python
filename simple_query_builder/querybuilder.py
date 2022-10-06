@@ -336,7 +336,7 @@ class QueryBuilder:
         self._sql += f" OFFSET {offset}"
         return self
 
-    def _prepare_sorting(self, field: str = '', sort: str = ''):
+    def _prepare_sorting(self, field: str = '', sort: str = '') -> tuple:
         if field.find(' ') > -1:
             splitted = field.split(' ')
             field = splitted[0]
@@ -349,19 +349,23 @@ class QueryBuilder:
         else:
             sort = sort.upper()
 
-        return field, sort
+        return f"`{field}`", sort
 
-    def order_by(self, field: str = '', sort: str = ''):
-        if field == '':
+    def order_by(self, field: Union[str, tuple, list] = (), sort: str = ''):
+        if field == '' or field == () or field == []:
             self.set_error(f"Empty field in {inspect.stack()[0][3]} method")
             return self
 
-        field, sort = self._prepare_sorting(field, sort)
+        if isinstance(field, str):
+            field, sort = self._prepare_sorting(field, sort)
 
-        if sort in self._SORT_TYPES:
-            self._sql += f" ORDER BY `{field}` {sort}"
-        else:
-            self._sql += f" ORDER BY `{field}`"
+            if sort in self._SORT_TYPES:
+                self._sql += f" ORDER BY {field} {sort}"
+            else:
+                self._sql += f" ORDER BY {field}"
+        elif isinstance(field, tuple) or isinstance(field, list):
+            new_list = [f"{self._prepare_sorting(item)[0]} {self._prepare_sorting(item)[1]}" for item in field]
+            self._sql += ' ORDER BY ' + ', '.join(new_list)
 
         return self
 
