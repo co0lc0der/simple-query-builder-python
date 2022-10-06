@@ -365,7 +365,7 @@ class QueryBuilder:
         if isinstance(fields, str):
             result = self._prepare_field(fields)
         elif isinstance(fields, tuple) or isinstance(fields, list):
-            fields = [f"{self._prepare_field(field)}" for field in fields]
+            fields = [self._prepare_field(field) for field in fields]
             result = ', '.join(fields)
 
         return result
@@ -393,8 +393,7 @@ class QueryBuilder:
             self.set_error(f"Empty field in {inspect.stack()[0][3]} method")
             return self
 
-        field = self._prepare_fieldlist(field)
-        self._sql += f" GROUP BY {field}"
+        self._sql += f" GROUP BY {self._prepare_fieldlist(field)}"
 
         return self
 
@@ -421,10 +420,8 @@ class QueryBuilder:
             self.set_error(f"Empty table or fields in {inspect.stack()[0][3]} method")
             return self
 
-        if isinstance(table, dict):
-            table = f"`{self._prepare_aliases(table)}`"
-        elif isinstance(table, str):
-            table = f"`{table}`"
+        if isinstance(table, dict) or isinstance(table, str):
+            table = self._prepare_aliases(table)
         else:
             self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
             return self
@@ -433,14 +430,14 @@ class QueryBuilder:
 
         if isinstance(fields, dict):
             values = ("?," * len(fields)).rstrip(',')
-            self._sql = f"INSERT INTO {table} (`" + '`, `'.join(list(fields.keys())) + f"`) VALUES ({values})"
+            self._sql = f"INSERT INTO {table} (" + self._prepare_fieldlist(list(fields.keys())) + f") VALUES ({values})"
             self._params = tuple(fields.values())
         elif isinstance(fields, list):
             names = fields.pop(0)
             value = ("?," * len(names)).rstrip(',')
             v = f"({value}),"
             values = (v * len(fields)).rstrip(',')
-            self._sql = f"INSERT INTO {table} (`" + '`, `'.join(names) + f"`) VALUES {values}"
+            self._sql = f"INSERT INTO {table} (" + self._prepare_fieldlist(names) + f") VALUES {values}"
             params = []
             for item in fields:
                 if isinstance(item, list):
