@@ -198,21 +198,14 @@ class QueryBuilder:
             for item in items:
                 if isinstance(items, list):
                     if isinstance(item, str):
-                        new_item = item.replace('.', '`.`')
-                        sql.append(f"`{new_item}`")
+                        sql.append(f"{item}")
                     elif isinstance(item, dict):
-                        first_item = list(item.values())[0].replace('.', '`.`')
+                        first_item = list(item.values())[0]
                         alias = list(item.keys())[0]
-                        if first_item.find('(') > -1 or first_item.find(')') > -1:
-                            sql.append(f"{first_item}" if isinstance(alias, int) else f"{first_item} AS `{alias}`")
-                        else:
-                            sql.append(f"`{first_item}`" if isinstance(alias, int) else f"`{first_item}` AS `{alias}`")
+                        sql.append(f"{first_item}" if isinstance(alias, int) else f"{first_item} AS {alias}")
                 elif isinstance(items, dict):
-                    new_item = items[item].replace('.', '`.`')
-                    if new_item.find('(') > -1 or new_item.find(')') > -1:
-                        sql.append(f"{new_item}" if isinstance(item, int) else f"{new_item} AS `{item}`")
-                    else:
-                        sql.append(f"`{new_item}`" if isinstance(item, int) else f"`{new_item}` AS `{item}`")
+                    new_item = items[item]
+                    sql.append(f"{new_item}" if isinstance(item, int) else f"{new_item} AS {item}")
         else:
             self.set_error(f"Incorrect type of items in {inspect.stack()[0][3]} method")
             return ''
@@ -232,17 +225,17 @@ class QueryBuilder:
             for cond in where:
                 if isinstance(cond, list):
                     if len(cond) == 3:
-                        field = cond[0].replace('.', '`.`')
+                        field = self._prepare_field(cond[0])
                         operator = cond[1].upper()
                         value = cond[2]
                         if operator in self._OPERATORS:
                             if operator == 'IN' and (isinstance(value, list) or isinstance(value, tuple)):
                                 values = ("?," * len(value)).rstrip(',')
-                                sql += f"(`{field}` {operator} ({values}))"
+                                sql += f"({field} {operator} ({values}))"
                                 for item in value:
                                     result['values'].append(item)
                             else:
-                                sql += f"({field} {operator} ?)" if field.find('(') > -1 or field.find(')') > -1 else f"(`{field}` {operator} ?)"
+                                sql += f"({field} {operator} ?)"
                                 result['values'].append(value)
                 elif isinstance(cond, str):
                     upper = cond.upper()
