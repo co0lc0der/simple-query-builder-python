@@ -406,10 +406,8 @@ class QueryBuilder:
             self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
             return self
 
-        if isinstance(table, dict):
-            table = f"`{self._prepare_aliases(table)}`"
-        elif isinstance(table, str):
-            table = f"`{table}`"
+        if isinstance(table, dict) or isinstance(table, str):
+            table = self._prepare_aliases(table)
         else:
             self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
             return self
