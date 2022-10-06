@@ -350,7 +350,11 @@ class QueryBuilder:
             return ''
 
         if field.find('(') > -1 or field.find(')') > -1:
-            return f"{field}"
+            if field.find(' AS ') > -1:
+                field = field.replace(' AS ', ' AS `')
+                return f"{field}`"
+            else:
+                return f"{field}"
         else:
             field = field.replace('.', '`.`')
             field = field.replace(' AS ', '` AS `')
