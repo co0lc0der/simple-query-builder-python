@@ -336,18 +336,33 @@ class QueryBuilder:
         self._sql += f" OFFSET {offset}"
         return self
 
-    def order_by(self, field: str = '', sort: str = 'ASC'):
-        if field == '' or sort == '':
-            self.set_error(f"Empty field or sort in {inspect.stack()[0][3]} method")
+    def _prepare_sorting(self, field: str = '', sort: str = ''):
+        if field.find(' ') > -1:
+            splitted = field.split(' ')
+            field = splitted[0]
+            sort = splitted[1]
+
+        field = field.replace('.', '`.`')
+
+        if sort == '':
+            sort = 'ASC'
+        else:
+            sort = sort.upper()
+
+        return field, sort
+
+    def order_by(self, field: str = '', sort: str = ''):
+        if field == '':
+            self.set_error(f"Empty field in {inspect.stack()[0][3]} method")
             return self
 
-        sort = sort.upper()
-        field = field.replace('.', '`.`')
+        field, sort = self._prepare_sorting(field, sort)
 
         if sort in self._SORT_TYPES:
             self._sql += f" ORDER BY `{field}` {sort}"
         else:
             self._sql += f" ORDER BY `{field}`"
+
         return self
 
     def group_by(self, field: str = ''):
