@@ -217,7 +217,7 @@ class QueryBuilder:
             self.set_error(f"Incorrect type of items in {inspect.stack()[0][3]} method")
             return ''
 
-        return ', '.join(sql) if not as_list else sql
+        return self._prepare_fieldlist(sql) if not as_list else sql
 
     def _prepare_conditions(self, where: Union[str, list]) -> dict:
         result = {'sql': '', 'values': []}
@@ -351,6 +351,12 @@ class QueryBuilder:
 
         return f"`{field}`", sort
 
+    def _prepare_fieldlist(self, fields: Union[tuple, list] = ()) -> str:
+        if fields == () or fields == []:
+            self.set_error(f"Empty fieldlist in {inspect.stack()[0][3]} method")
+            return ''
+        return ', '.join(fields)
+
     def order_by(self, field: Union[str, tuple, list] = (), sort: str = ''):
         if field == '' or field == () or field == []:
             self.set_error(f"Empty field in {inspect.stack()[0][3]} method")
@@ -365,7 +371,7 @@ class QueryBuilder:
                 self._sql += f" ORDER BY {field}"
         elif isinstance(field, tuple) or isinstance(field, list):
             new_list = [f"{self._prepare_sorting(item)[0]} {self._prepare_sorting(item)[1]}" for item in field]
-            self._sql += ' ORDER BY ' + ', '.join(new_list)
+            self._sql += ' ORDER BY ' + self._prepare_fieldlist(new_list)
 
         return self
 
