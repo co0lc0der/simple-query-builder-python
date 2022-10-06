@@ -395,13 +395,14 @@ class QueryBuilder:
 
         return self
 
-    def group_by(self, field: str = ''):
-        if field == '':
+    def group_by(self, field: Union[str, tuple, list] = ()):
+        if field == '' or field == () or field == []:
             self.set_error(f"Empty field in {inspect.stack()[0][3]} method")
             return self
 
-        field = field.replace('.', '`.`')
-        self._sql += f" GROUP BY `{field}`"
+        field = self._prepare_fieldlist(field)
+        self._sql += f" GROUP BY {field}"
+
         return self
 
     def delete(self, table: Union[str, dict]):
