@@ -342,7 +342,7 @@ class QueryBuilder:
             field = splitted[0]
             sort = splitted[1]
 
-        field = field.replace('.', '`.`')
+        field = self._prepare_field(field)
 
         if sort == '':
             sort = 'ASC'
@@ -351,11 +351,31 @@ class QueryBuilder:
 
         return f"`{field}`", sort
 
-    def _prepare_fieldlist(self, fields: Union[tuple, list] = ()) -> str:
-        if fields == () or fields == []:
-            self.set_error(f"Empty fieldlist in {inspect.stack()[0][3]} method")
+    def _prepare_field(self, field: str = '') -> str:
+        if field == '':
+            self.set_error(f"Empty field in {inspect.stack()[0][3]} method")
             return ''
-        return ', '.join(fields)
+
+        if field.find('(') > -1 or field.find(')') > -1:
+            return f"{field}"
+        else:
+            field = field.replace('.', '`.`')
+            field = field.replace(' AS ', '` AS `')
+            return f"`{field}`"
+
+    def _prepare_fieldlist(self, fields: Union[str, tuple, list] = ()) -> str:
+        result = ''
+        if fields == '' or fields == () or fields == []:
+            self.set_error(f"Empty fields in {inspect.stack()[0][3]} method")
+            return result
+
+        if isinstance(fields, str):
+            result = self._prepare_field(fields)
+        elif isinstance(fields, tuple) or isinstance(fields, list):
+            fields = [f"{self._prepare_field(field)}" for field in fields]
+            result = ', '.join(fields)
+
+        return result
 
     def order_by(self, field: Union[str, tuple, list] = (), sort: str = ''):
         if field == '' or field == () or field == []:
