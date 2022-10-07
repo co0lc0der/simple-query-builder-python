@@ -367,7 +367,7 @@ class QueryBuilder:
         else:
             field = field.replace('.', '`.`')
             field = field.replace(' AS ', '` AS `')
-            return f"`{field}`"
+            return field if field == '*' else f"`{field}`"
 
     def _prepare_fieldlist(self, fields: Union[str, tuple, list] = ()) -> str:
         result = ''
