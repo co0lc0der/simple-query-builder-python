@@ -224,7 +224,20 @@ class QueryBuilder:
         elif isinstance(where, list):
             for cond in where:
                 if isinstance(cond, list):
-                    if len(cond) == 3:
+                    if len(cond) == 2:
+                        field = self._prepare_field(cond[0])
+                        value = cond[1]
+                        if isinstance(value, list) or isinstance(value, tuple):
+                            operator = 'IN'
+                            values = ("?," * len(value)).rstrip(',')
+                            sql += f"({field} {operator} ({values}))"
+                            for item in value:
+                                result['values'].append(item)
+                        else:
+                            operator = '='
+                            sql += f"({field} {operator} ?)"
+                            result['values'].append(value)
+                    elif len(cond) == 3:
                         field = self._prepare_field(cond[0])
                         operator = cond[1].upper()
                         value = cond[2]
