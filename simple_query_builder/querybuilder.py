@@ -485,18 +485,16 @@ class QueryBuilder:
             self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
             return self
 
-        if isinstance(table, dict):
+        if isinstance(table, dict) or isinstance(table, str):
             self._sql += f" {join_type} JOIN {self._prepare_aliases(table)}"
-        elif isinstance(table, str):
-            self._sql += f" {join_type} JOIN `{table}`"
         else:
             self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
             return self
 
         if on:
             if isinstance(on, tuple) or isinstance(on, list):
-                field1 = f"`{on[0].replace('.', '`.`')}`"
-                field2 = f"`{on[1].replace('.', '`.`')}`"
+                field1 = self._prepare_field(on[0])
+                field2 = self._prepare_field(on[1])
                 self._sql += f" ON {field1} = {field2}"
             elif isinstance(on, str):
                 self._sql += f" ON {on}"
