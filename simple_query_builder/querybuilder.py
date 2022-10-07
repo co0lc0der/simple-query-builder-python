@@ -163,6 +163,10 @@ class QueryBuilder:
         self.query('', (), self._FETCH_COLUMN, column)
         return self._result
 
+    def pluck(self, key: int = 0, column: int = 1) -> Union[tuple, list, dict, None]:
+        self.query()
+        return [(x[key], x[column]) for x in self._result]
+
     def count(self, table: Union[str, dict], field: str = ''):
         if table == '' or table == {}:
             self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
