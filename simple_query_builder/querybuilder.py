@@ -346,12 +346,9 @@ class QueryBuilder:
 
         field = self._prepare_field(field)
 
-        if sort == '':
-            sort = 'ASC'
-        else:
-            sort = sort.upper()
+        sort = 'ASC' if sort == '' else sort.upper()
 
-        return f"`{field}`", sort
+        return field, sort
 
     def _prepare_field(self, field: str = '') -> str:
         if field == '':
