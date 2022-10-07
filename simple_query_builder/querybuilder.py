@@ -256,18 +256,14 @@ class QueryBuilder:
 
         self.reset()
 
-        if isinstance(fields, dict) or isinstance(fields, list):
+        if isinstance(fields, dict) or isinstance(fields, list) or isinstance(fields, str):
             self._sql = f"SELECT {self._prepare_aliases(fields)}"
-        elif isinstance(fields, str):
-            self._sql = f"SELECT {fields}"
         else:
             self.set_error(f"Incorrect type of fields in {inspect.stack()[0][3]} method. Fields must be String, List or Dictionary")
             return self
 
-        if isinstance(table, dict):
+        if isinstance(table, dict) or isinstance(table, str):
             self._sql += f" FROM {self._prepare_aliases(table)}"
-        elif isinstance(table, str):
-            self._sql += f" FROM `{table}`"
         else:
             self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
             return self
