@@ -355,7 +355,7 @@ class QueryBuilder:
             self.set_error(f"Empty field in {inspect.stack()[0][3]} method")
             return ''
 
-        if field.find('(') > -1 or field.find(')') > -1:
+        if field.find('(') > -1 or field.find(')') > -1 or field.find('*') > -1:
             if field.find(' AS ') > -1:
                 field = field.replace(' AS ', ' AS `')
                 return f"{field}`"
@@ -364,7 +364,7 @@ class QueryBuilder:
         else:
             field = field.replace('.', '`.`')
             field = field.replace(' AS ', '` AS `')
-            return field if field == '*' else f"`{field}`"
+            return f"`{field}`"
 
     def _prepare_fieldlist(self, fields: Union[str, tuple, list] = ()) -> str:
         result = ''
@@ -393,8 +393,11 @@ class QueryBuilder:
             else:
                 self._sql += f" ORDER BY {field}"
         elif isinstance(field, tuple) or isinstance(field, list):
-            new_list = [f"{self._prepare_sorting(item)[0]} {self._prepare_sorting(item)[1]}" for item in field]
-            self._sql += ' ORDER BY ' + self._prepare_fieldlist(new_list)
+            new_list = []
+            for item in field:
+                new_item = self._prepare_sorting(item)
+                new_list.append(f"{new_item[0]} {new_item[1]}")
+            self._sql += ' ORDER BY ' + ', '.join(new_list)
 
         return self
 
