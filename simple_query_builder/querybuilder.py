@@ -138,19 +138,20 @@ class QueryBuilder:
     def get_count(self) -> int:
         return self._count
 
-    def reset(self) -> None:
+    def reset(self) -> bool:
         self._sql = ''
         self._params = ()
         self._query = None
         self._result = []
         self._count = -1
         self.set_error()
+        return True
 
-    def all(self) -> Union[list, dict]:
+    def all(self) -> Union[tuple, list, dict, None]:
         self.query()
         return self._result
 
-    def one(self) -> Union[list, dict]:
+    def one(self) -> Union[tuple, list, dict, None]:
         self.query(self._sql, self._params, self._FETCH_ONE)
         return self._result
 
@@ -158,7 +159,7 @@ class QueryBuilder:
         self.query(self._sql, self._params, self._NO_FETCH)
         return self._cur.lastrowid
 
-    def column(self, column=0):
+    def column(self, column: int = 0) -> Union[tuple, list, dict, None]:
         self.query('', (), self._FETCH_COLUMN, column)
         return self._result
 
