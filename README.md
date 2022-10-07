@@ -43,7 +43,8 @@ pip install https://github.com/co0lc0der/simple-query-builder-python/archive/mai
 - `reset()` resets state to default values (except PDO property)
 - `all()` executes SQL query and returns all rows of result (`fetchall()`)
 - `one()` executes SQL query and returns the first row of result (`fetchone()`)
-- `column(col_index)` executes SQL query and returns the first column of result, `col_index` is `0` by default
+- `column(col_index)` executes SQL query and returns the needed column of result, `col_index` is `0` by default
+- `pluck(key_index, col_index)` executes SQL query and returns a list of tuples (the key (usually ID) and the needed column of result), `key_index` is `0` and `col_index` is `1` by default
 - `go()` this method is for non `SELECT` queries. it executes SQL query and returns nothing (but returns the last inserted row ID for `INSERT` method)
 - `count()` prepares a query with SQL `COUNT(*)` function and executes it
 - `query(sql, params, fetch_type, col_index)` executes prepared `sql` with `params`, it can be used for custom queries
@@ -66,6 +67,8 @@ SELECT * FROM `users`;
 - Select a row with a condition
 ```python
 results = qb.select('users').where([['id', '=', 10]]).one()
+# or since 0.3.4
+results = qb.select('users').where([['id', 10]]).one()
 ```
 ```sql
 SELECT * FROM `users` WHERE `id` = 10;
@@ -73,6 +76,8 @@ SELECT * FROM `users` WHERE `id` = 10;
 - Select rows with two conditions
 ```python
 results = qb.select('users').where([['id', '>', 1], 'and', ['group_id', '=', 2]]).all()
+# or since 0.3.4
+results = qb.select('users').where([['id', '>', 1], 'and', ['group_id', 2]]).all()
 ```
 ```sql
 SELECT * FROM `users` WHERE (`id` > 1) AND (`group_id` = 2);
@@ -101,6 +106,12 @@ results = qb.select('posts')\
     .offset(14)\
     .limit(7)\
     .all()
+# or since 0.3.4
+results = qb.select('posts')\
+    .where([['user_id', 3]])\
+    .offset(14)\
+    .limit(7)\
+    .all()
 ```
 ```sql
 SELECT * FROM `posts` WHERE (`user_id` = 3) OFFSET 14 LIMIT 7;
@@ -118,8 +129,13 @@ SELECT COUNT(*) AS `counter` FROM `users`;
 2. `ORDER BY`
 ```python
 results = qb.select({'b': 'branches'}, ['b.id', 'b.name'])\
-    .where([['b.id', '>', 1], 'and', ['b.parent_id', '=', 1]])\
-    .orderBy('b.id', 'desc')\
+    .where([['b.id', '>', 1], 'and', ['b.parent_id', 1]])\
+    .order_by('b.id', 'desc')\
+    .all()
+# or since 0.3.4
+results = qb.select({'b': 'branches'}, ['b.id', 'b.name'])\
+    .where([['b.id', '>', 1], 'and', ['b.parent_id', 1]])\
+    .order_by('b.id desc')\
     .all()
 ```
 ```sql
@@ -131,7 +147,7 @@ ORDER BY `b`.`id` DESC;
 ```python
 results = qb.select('posts', ['id', 'category', 'title'])\
     .where([['views', '>=', 1000]])\
-    .groupBy('category')\
+    .group_by('category')\
     .all()
 ```
 ```sql
@@ -141,14 +157,20 @@ WHERE (`views` >= 1000) GROUP BY `category`;
 ```python
 groups = qb.select('orders', {'month_num': 'MONTH(`created_at`)', 'total': 'SUM(`total`)'})\
     .where([['YEAR(`created_at`)', '=', 2020]])\
-    .groupBy('month_num')\
-    .having([['total', '>', 20000]])\
+    .group_by('month_num')\
+    .having([['total', '=', 20000]])\
+    .all()
+# or since 0.3.4
+groups = qb.select('orders', {'month_num': 'MONTH(`created_at`)', 'total': 'SUM(`total`)'})\
+    .where([['YEAR(`created_at`)', 2020]])\
+    .group_by('month_num')\
+    .having([['total', 20000]])\
     .all()
 ```
 ```sql
 SELECT MONTH(`created_at`) AS `month_num`, SUM(`total`) AS `total`
 FROM `orders` WHERE (YEAR(`created_at`) = 2020)
-GROUP BY `month_num` HAVING (`total` > 20000);
+GROUP BY `month_num` HAVING (`total` = 20000);
 ```
 4. `JOIN`. Supports `INNER`, `LEFT OUTER`, `RIGHT OUTER`, `FULL OUTER` and `CROSS` joins (`INNER` is by default)
 ```python
@@ -191,7 +213,36 @@ FROM `cabs_printers` AS `cp`
 INNER JOIN `cabs` AS `cb` ON `cp`.`cab_id` = `cb`.`id`
 INNER JOIN `printer_models` AS `p` ON `cp`.`printer_id` = `p`.`id`
 INNER JOIN `cartridge_types` AS `c` ON p.cartridge_id=c.id
-WHERE (`cp`.`cab_id` IN (11,12,13)) OR (`cp`.`cab_id` = 5) AND (`p`.`id` > `c`.`id`);
+WHERE (`cp`.`cab_id` IN (11, 12, 13)) OR (`cp`.`cab_id` = 5) AND (`p`.`id` > `c`.`id`);
+```
+```python
+# since 0.3.4
+results = qb.select({'cp': 'cabs_printers'}, [
+        'cp.id',
+        'cp.cab_id',
+        {'cab_name': 'cb.name'},
+        'cp.printer_id',
+        {'cartridge_id': 'c.id'},
+        {'printer_name': 'p.name'},
+        {'cartridge_type': 'c.name'},
+        'cp.comment'
+    ])\
+    .join({'cb': 'cabs'}, ['cp.cab_id', 'cb.id'])\
+    .join({'p': 'printer_models'}, ['cp.printer_id', 'p.id'])\
+    .join({'c': 'cartridge_types'}, ['p.cartridge_id', 'c.id'])\
+    .group_by(['cp.printer_id', 'cartridge_id'])\
+    .order_by(['cp.cab_id', 'cp.printer_id desc'])\
+    .all()
+```
+```sql
+SELECT `cp`.`id`, `cp`.`cab_id`, `cb`.`name` AS `cab_name`, `cp`.`printer_id`, `c`.`id` AS `cartridge_id`,
+    `p`.`name` AS `printer_name`, `c`.`name` AS `cartridge_type`, `cp`.`comment`
+FROM `cabs_printers` AS `cp`
+INNER JOIN `cabs` AS `cb` ON `cp`.`cab_id` = `cb`.`id`
+INNER JOIN `printer_models` AS `p` ON `cp`.`printer_id` = `p`.`id`
+INNER JOIN `cartridge_types` AS `c` ON `p`.`cartridge_id` = `c`.`id`
+GROUP BY `cp`.`printer_id`, `cartridge_id`
+ORDER BY `cp`.`cab_id` ASC, `cp`.`printer_id` DESC;
 ```
 - Insert a row
 ```python
@@ -228,6 +279,14 @@ qb.update('users', {
     .where([['id', '=', 7]])\
     .limit()\
     .go()
+# or since 0.3.4
+qb.update('users', {
+        'username': 'John Doe',
+        'status': 'new status'
+    })\
+    .where([['id', 7]])\
+    .limit()\
+    .go()
 ```
 ```sql
 UPDATE `users` SET `username` = 'John Doe', `status` = 'new status'
@@ -249,6 +308,11 @@ qb.delete('users')\
     .where([['name', '=', 'John']])\
     .limit()\
     .go()
+# or since 0.3.4
+qb.delete('users')\
+    .where([['name', 'John']])\
+    .limit()\
+    .go()
 ```
 ```sql
 DELETE FROM `users` WHERE `name` = 'John' LIMIT 1;
@@ -257,6 +321,10 @@ DELETE FROM `users` WHERE `name` = 'John' LIMIT 1;
 ```python
 qb.delete('comments')\
     .where([['user_id', '=', 10]])\
+    .go()
+# or since 0.3.4
+qb.delete('comments')\
+    .where([['user_id', 10]])\
     .go()
 ```
 ```sql
