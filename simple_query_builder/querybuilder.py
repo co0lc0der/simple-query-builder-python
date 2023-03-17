@@ -74,9 +74,10 @@ class QueryBuilder:
         self._conn = database.connect(db_name)
         self._print_errors = print_errors
         # self._conn.row_factory = sqlite3.Row
-        self._conn.row_factory = lambda c, r: dict(
-            [(col[0], r[idx]) for idx, col in enumerate(c.description)]
-        )
+        if result_dict:
+            self._conn.row_factory = lambda c, r: dict(
+                [(col[0], r[idx]) for idx, col in enumerate(c.description)]
+            )
         self._cur = self._conn.cursor()
 
     def query(self, sql: str = "", params=(), fetch=2, column=0):
