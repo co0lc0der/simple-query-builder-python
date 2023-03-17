@@ -376,20 +376,32 @@ class QueryBuilder:
 
         return self
 
-    def like(self, cond: Union[str, tuple, list] = ()):
-        if cond:
-            if isinstance(cond, str):
-                self.where(cond)
-            elif isinstance(cond, tuple) or isinstance(cond, list):
-                self.where([[cond[0], "LIKE", cond[1]]])
+    def like(self, field: Union[str, tuple, list] = (), value: str = ""):
+        if not field:
+            self.set_error(f"Empty field in {inspect.stack()[0][3]} method")
+            return self
+
+        if isinstance(field, str) and field and isinstance(value, str) and value:
+            self.where([[field, "LIKE", value]])
+        elif isinstance(field, str) and not value:
+            self.where(field)
+        elif isinstance(field, tuple) or isinstance(field, list):
+            self.where([[field[0], "LIKE", field[1]]])
+
         return self
 
-    def not_like(self, cond: Union[str, tuple, list] = ()):
-        if cond:
-            if isinstance(cond, str):
-                self.where(cond)
-            elif isinstance(cond, tuple) or isinstance(cond, list):
-                self.where([[cond[0], "NOT LIKE", cond[1]]])
+    def not_like(self, field: Union[str, tuple, list] = (), value: str = ""):
+        if not field:
+            self.set_error(f"Empty field in {inspect.stack()[0][3]} method")
+            return self
+
+        if isinstance(field, str) and isinstance(value, str) and value:
+            self.where([[field, "NOT LIKE", value]])
+        elif isinstance(field, str) and not value:
+            self.where(field)
+        elif isinstance(field, tuple) or isinstance(field, list):
+            self.where([[field[0], "NOT LIKE", field[1]]])
+
         return self
 
     def is_null(self, field: str = ""):
