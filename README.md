@@ -7,7 +7,7 @@
 ![PyPI](https://img.shields.io/pypi/v/simple-query-builder?color=yellow&style=flat-square)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/simple-query-builder?color=darkgreen&style=flat-square)
 
-This is a small easy-to-use module for working with a database. It provides some public methods to compose SQL queries and manipulate data. Each SQL query is prepared and safe. QueryBuilder fetches data to _list_ by default. At present time the component supports SQLite (file or memory).
+This is a small easy-to-use module for working with a database. It provides some public methods to compose SQL queries and manipulate data. Each SQL query is prepared and safe. QueryBuilder fetches data to _dictionary_ by default. At present time the component supports SQLite (file or memory).
 
 ## Contributing
 
@@ -37,7 +37,7 @@ pip install https://github.com/co0lc0der/simple-query-builder-python/archive/mai
 - `get_count()` returns result's rows count
 - `get_error()` returns `True` if an error is had
 - `get_error_message()` returns an error message if an error is had
-- `set_error(message)` sets `_error` to `True` and `_error_essage`
+- `set_error(message)` sets `_error` to `True` and `_error_message`
 - `get_first()` returns the first item of results
 - `get_last()` returns the last item of results
 - `reset()` resets state to default values
