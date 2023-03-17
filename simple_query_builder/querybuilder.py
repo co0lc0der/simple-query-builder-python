@@ -65,12 +65,14 @@ class QueryBuilder:
     _sql: str = ""
     _error: bool = False
     _error_message: str = ""
+    _print_errors: bool = False
     _result: Union[tuple, list] = []
     _count: int = -1
     _params: tuple = ()
 
-    def __init__(self, database: DataBase, db_name="") -> None:
+    def __init__(self, database: DataBase, db_name: str = "", result_dict: bool = True, print_errors: bool = False) -> None:
         self._conn = database.connect(db_name)
+        self._print_errors = print_errors
         # self._conn.row_factory = sqlite3.Row
         self._conn.row_factory = lambda c, r: dict(
             [(col[0], r[idx]) for idx, col in enumerate(c.description)]
@@ -144,11 +146,15 @@ class QueryBuilder:
         return self._error
 
     def get_error_message(self) -> str:
+        if self._print_errors and self._error:
+            print(self._error_message)
         return self._error_message
 
     def set_error(self, message: str = "") -> None:
-        self._error = message != ""
+        self._error = bool(message)
         self._error_message = message
+        if self._print_errors and self._error:
+            print(self._error_message)
 
     def get_params(self) -> tuple:
         return self._params
