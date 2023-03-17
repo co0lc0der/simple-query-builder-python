@@ -32,7 +32,7 @@ pip install https://github.com/co0lc0der/simple-query-builder-python/archive/mai
 ## How to use
 ### Main public methods
 - `get_sql()` returns SQL query string which will be executed
-- `get_params()` returns an array of parameters for a query
+- `get_params()` returns a tuple of parameters for a query
 - `get_result()` returns query's result
 - `get_count()` returns result's rows count
 - `get_error()` returns `True` if an error is had
@@ -40,7 +40,7 @@ pip install https://github.com/co0lc0der/simple-query-builder-python/archive/mai
 - `set_error(message)` sets `_error` to `True` and `_error_essage`
 - `get_first()` returns the first item of results
 - `get_last()` returns the last item of results
-- `reset()` resets state to default values (except PDO property)
+- `reset()` resets state to default values
 - `all()` executes SQL query and returns all rows of result (`fetchall()`)
 - `one()` executes SQL query and returns the first row of result (`fetchone()`)
 - `column(col_index)` executes SQL query and returns the needed column of result, `col_index` is `0` by default
@@ -55,7 +55,14 @@ pip install https://github.com/co0lc0der/simple-query-builder-python/archive/mai
 ```python
 from simple_query_builder import *
 
-qb = QueryBuilder(DataBase(), 'my_db.db')
+# if you want to get results as a list of dictionaries (by default since 0.3.5)
+qb = QueryBuilder(DataBase(), 'my_db.db') # result_dict=True, print_errors=False
+
+# or if you want to get results as a list of tuples (since 0.3.5)
+qb = QueryBuilder(DataBase(), 'my_db.db', result_dict=False)
+
+# for printing errors into terminal (since 0.3.5)
+qb = QueryBuilder(DataBase(), 'my_db.db', print_errors=True)
 ```
 ### Usage examples
 - Select all rows from a table
@@ -86,20 +93,20 @@ SELECT * FROM `users` WHERE (`id` > 1) AND (`group_id` = 2);
 - Select a row with a `LIKE` and `NOT LIKE` condition
 ```python
 results = qb.select('users').like(['name', '%John%']).all()
-# or since 0.3.5
-results = qb.select('users').like('name', '%John%').all()
 # or
 results = qb.select('users').where([['name', 'LIKE', '%John%']]).all()
+# or since 0.3.5
+results = qb.select('users').like('name', '%John%').all()
 ```
 ```sql
 SELECT * FROM `users` WHERE (`name` LIKE '%John%');
 ```
 ```python
 results = qb.select('users').not_like(['name', '%John%']).all()
-# or since 0.3.5
-results = qb.select('users').not_like('name', '%John%').all()
 # or
 results = qb.select('users').where([['name', 'NOT LIKE', '%John%']]).all()
+# or since 0.3.5
+results = qb.select('users').not_like('name', '%John%').all()
 ```
 ```sql
 SELECT * FROM `users` WHERE (`name` NOT LIKE '%John%');
