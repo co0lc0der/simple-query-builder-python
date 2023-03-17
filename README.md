@@ -1,11 +1,11 @@
 # QueryBuilder python module
 
-![PyPI](https://img.shields.io/pypi/v/simple-query-builder?color=yellow&style=flat-square)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/simple-query-builder?color=darkgreen&style=flat-square)
 [![Latest Version](https://img.shields.io/github/release/co0lc0der/simple-query-builder-python?color=orange&style=flat-square)](https://github.com/co0lc0der/simple-query-builder-python/release)
 ![GitHub repo size](https://img.shields.io/github/repo-size/co0lc0der/simple-query-builder-python?label=size&style=flat-square)
-![Python 3.7, 3.8, 3.9, 3.10](https://img.shields.io/pypi/pyversions/simple-query-builder?color=blueviolet&style=flat-square)
 [![GitHub license](https://img.shields.io/github/license/co0lc0der/simple-query-builder-python?style=flat-square)](https://github.com/co0lc0der/simple-query-builder-python/blob/main/LICENSE.md)
+![Python 3.7, 3.8, 3.9, 3.10](https://img.shields.io/pypi/pyversions/simple-query-builder?color=blueviolet&style=flat-square)
+![PyPI](https://img.shields.io/pypi/v/simple-query-builder?color=yellow&style=flat-square)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/simple-query-builder?color=darkgreen&style=flat-square)
 
 This is a small easy-to-use module for working with a database. It provides some public methods to compose SQL queries and manipulate data. Each SQL query is prepared and safe. QueryBuilder fetches data to _list_ by default. At present time the component supports SQLite (file or memory).
 
@@ -46,6 +46,7 @@ pip install https://github.com/co0lc0der/simple-query-builder-python/archive/mai
 - `column(col_index)` executes SQL query and returns the needed column of result, `col_index` is `0` by default
 - `pluck(key_index, col_index)` executes SQL query and returns a list of tuples (the key (usually ID) and the needed column of result), `key_index` is `0` and `col_index` is `1` by default
 - `go()` this method is for non `SELECT` queries. it executes SQL query and returns nothing (but returns the last inserted row ID for `INSERT` method)
+- `exists()` returns `True` if SQL query has a row
 - `count()` prepares a query with SQL `COUNT(*)` function and executes it
 - `query(sql, params, fetch_type, col_index)` executes prepared `sql` with `params`, it can be used for custom queries
 - 'SQL' methods are presented in [Usage section](#usage-examples)
@@ -85,6 +86,8 @@ SELECT * FROM `users` WHERE (`id` > 1) AND (`group_id` = 2);
 - Select a row with a `LIKE` and `NOT LIKE` condition
 ```python
 results = qb.select('users').like(['name', '%John%']).all()
+# or since 0.3.5
+results = qb.select('users').like('name', '%John%').all()
 # or
 results = qb.select('users').where([['name', 'LIKE', '%John%']]).all()
 ```
@@ -92,12 +95,33 @@ results = qb.select('users').where([['name', 'LIKE', '%John%']]).all()
 SELECT * FROM `users` WHERE (`name` LIKE '%John%');
 ```
 ```python
-results = qb.select('users').notLike(['name', '%John%']).all()
+results = qb.select('users').not_like(['name', '%John%']).all()
+# or since 0.3.5
+results = qb.select('users').not_like('name', '%John%').all()
 # or
 results = qb.select('users').where([['name', 'NOT LIKE', '%John%']]).all()
 ```
 ```sql
 SELECT * FROM `users` WHERE (`name` NOT LIKE '%John%');
+```
+- Select a row with a `IS NULL` and `IS NOT NULL` condition (since 0.3.5)
+```python
+results = qb.select('users').is_null('phone').all()
+# or
+results = qb.select('users').where([['phone', 'is null']]).all()
+```
+```sql
+SELECT * FROM `users` WHERE (`phone` IS NULL);
+```
+```python
+results = qb.select('customers').is_not_null('address').all()
+# or
+results = qb.select('customers').not_null('address').all()
+# or
+results = qb.select('customers').where([['address', 'is not null']]).all()
+```
+```sql
+SELECT * FROM `customers` WHERE (`address` IS NOT NULL);
 ```
 - Select rows with `OFFSET` and `LIMIT`
 ```python
@@ -331,6 +355,8 @@ qb.delete('comments')\
 DELETE FROM `comments` WHERE `user_id` = 10;
 ```
 - Truncate a table
+
+This method will be moved to another class
 ```python
 qb.truncate('users').go()
 ```
@@ -338,6 +364,8 @@ qb.truncate('users').go()
 TRUNCATE TABLE `users`;
 ```
 - Drop a table
+
+This method will be moved to another class
 ```python
 qb.drop('temporary').go()
 ```
