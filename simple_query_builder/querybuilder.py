@@ -52,9 +52,22 @@ class QueryBuilder:
         "IN",
         "NOT IN",
     ]
-    _LOGICS: list = ["AND", "OR", "NOT"]
-    _SORT_TYPES: list = ["ASC", "DESC"]
-    _JOIN_TYPES: list = ["INNER", "LEFT OUTER", "RIGHT OUTER", "FULL OUTER", "CROSS"]
+    _LOGICS: list = [
+        "AND",
+        "OR",
+        "NOT"
+    ]
+    _SORT_TYPES: list = [
+        "ASC",
+        "DESC"
+    ]
+    _JOIN_TYPES: list = [
+        "INNER",
+        "LEFT OUTER",
+        "RIGHT OUTER",
+        "FULL OUTER",
+        "CROSS"
+    ]
     _NO_FETCH: int = 0
     _FETCH_ONE: int = 1
     _FETCH_ALL: int = 2
@@ -124,12 +137,12 @@ class QueryBuilder:
         return self
 
     def add_semicolon(self, sql: str = "") -> str:
-        new_sql = self._sql if sql == "" else sql
+        new_sql = self._sql if not sql else sql
 
-        if new_sql != "":
+        if new_sql:
             new_sql += ";" if new_sql[-1] != ";" else ""
 
-        if sql == "":
+        if not sql:
             self._sql = new_sql
 
         return new_sql
@@ -196,11 +209,11 @@ class QueryBuilder:
         return [(x[key], x[column]) for x in self._result]
 
     def count(self, table: Union[str, dict], field: str = ""):
-        if table == "" or table == {}:
+        if not table:
             self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
             return self
 
-        if field == "":
+        if not field:
             self.select(table, "COUNT(*) AS `counter`")
         else:
             field = field.replace(".", "`.`")
@@ -219,10 +232,8 @@ class QueryBuilder:
         result = self.one()
         return self._count > 0
 
-    def _prepare_aliases(
-        self, items: Union[str, list, dict], as_list: bool = False
-    ) -> Union[str, list]:
-        if items == "" or items == {} or items == []:
+    def _prepare_aliases(self, items: Union[str, list, dict], as_list: bool = False) -> Union[str, list]:
+        if not items:
             self.set_error(f"Empty items in {inspect.stack()[0][3]} method")
             return ""
 
@@ -233,22 +244,18 @@ class QueryBuilder:
             for item in items:
                 if isinstance(items, list):
                     if isinstance(item, str):
-                        sql.append(f"{item}")
+                        sql.append(item)
                     elif isinstance(item, dict):
                         first_item = list(item.values())[0]
                         alias = list(item.keys())[0]
                         sql.append(
-                            f"{first_item}"
+                            first_item
                             if isinstance(alias, int)
                             else f"{first_item} AS {alias}"
                         )
                 elif isinstance(items, dict):
                     new_item = items[item]
-                    sql.append(
-                        f"{new_item}"
-                        if isinstance(item, int)
-                        else f"{new_item} AS {item}"
-                    )
+                    sql.append(new_item if isinstance(item, int) else f"{new_item} AS {item}")
         else:
             self.set_error(f"Incorrect type of items in {inspect.stack()[0][3]} method")
             return ""
@@ -256,14 +263,17 @@ class QueryBuilder:
         return self._prepare_fieldlist(sql) if not as_list else sql
 
     def _prepare_conditions(self, where: Union[str, list]) -> dict:
-        result = {"sql": "", "values": []}
+        result = {
+            "sql": "",
+            "values": []
+        }
         sql = ""
 
         if not where:
             return result
 
         if isinstance(where, str):
-            sql += f"{where}"
+            sql += where
         elif isinstance(where, list):
             for cond in where:
                 if isinstance(cond, list):
@@ -315,42 +325,34 @@ class QueryBuilder:
         return result
 
     def select(self, table: Union[str, dict], fields: Union[str, list, dict] = "*"):
-        if table == "" or table == {} or fields == "" or fields == [] or fields == {}:
+        if not table or not fields:
             self.set_error(f"Empty table or fields in {inspect.stack()[0][3]} method")
             return self
 
         self.reset()
 
-        if (
-            isinstance(fields, dict)
-            or isinstance(fields, list)
-            or isinstance(fields, str)
-        ):
+        if isinstance(fields, dict) or isinstance(fields, list) or isinstance(fields, str):
             self._sql = f"SELECT {self._prepare_aliases(fields)}"
         else:
-            self.set_error(
-                f"Incorrect type of fields in {inspect.stack()[0][3]} method. Fields must be String, List or Dictionary"
-            )
+            self.set_error(f"Incorrect type of fields in {inspect.stack()[0][3]} method. Fields must be String, List or Dictionary")
             return self
 
         if isinstance(table, dict) or isinstance(table, str):
             self._sql += f" FROM {self._prepare_aliases(table)}"
         else:
-            self.set_error(
-                f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary"
-            )
+            self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
             return self
 
         return self
 
     def where(self, where: Union[str, list], addition: str = ""):
-        if where == "" or where == []:
+        if not where:
             self.set_error(f"Empty where in {inspect.stack()[0][3]} method")
             return self
 
         conditions = self._prepare_conditions(where)
 
-        if addition != "":
+        if addition:
             self._sql += f" WHERE {conditions['sql']} {addition}"
         else:
             self._sql += f" WHERE {conditions['sql']}"
@@ -361,7 +363,7 @@ class QueryBuilder:
         return self
 
     def having(self, having: Union[str, list]):
-        if having == "" or having == []:
+        if not having:
             self.set_error(f"Empty having in {inspect.stack()[0][3]} method")
             return self
 
@@ -411,7 +413,7 @@ class QueryBuilder:
         return field, sort
 
     def _prepare_field(self, field: str = "") -> str:
-        if field == "":
+        if not field:
             self.set_error(f"Empty field in {inspect.stack()[0][3]} method")
             return ""
 
@@ -420,7 +422,7 @@ class QueryBuilder:
                 field = field.replace(" AS ", " AS `")
                 return f"{field}`"
             else:
-                return f"{field}"
+                return field
         else:
             field = field.replace(".", "`.`")
             field = field.replace(" AS ", "` AS `")
@@ -428,7 +430,7 @@ class QueryBuilder:
 
     def _prepare_fieldlist(self, fields: Union[str, tuple, list] = ()) -> str:
         result = ""
-        if fields == "" or fields == () or fields == []:
+        if not fields:
             self.set_error(f"Empty fields in {inspect.stack()[0][3]} method")
             return result
 
@@ -441,7 +443,7 @@ class QueryBuilder:
         return result
 
     def order_by(self, field: Union[str, tuple, list] = (), sort: str = ""):
-        if field == "" or field == () or field == []:
+        if not field:
             self.set_error(f"Empty field in {inspect.stack()[0][3]} method")
             return self
 
@@ -462,7 +464,7 @@ class QueryBuilder:
         return self
 
     def group_by(self, field: Union[str, tuple, list] = ()):
-        if field == "" or field == () or field == []:
+        if not field:
             self.set_error(f"Empty field in {inspect.stack()[0][3]} method")
             return self
 
@@ -471,16 +473,14 @@ class QueryBuilder:
         return self
 
     def delete(self, table: Union[str, dict]):
-        if table == "" or table == {}:
+        if not table:
             self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
             return self
 
         if isinstance(table, dict) or isinstance(table, str):
             table = self._prepare_aliases(table)
         else:
-            self.set_error(
-                f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary"
-            )
+            self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
             return self
 
         self.reset()
@@ -489,38 +489,28 @@ class QueryBuilder:
         return self
 
     def insert(self, table: Union[str, dict], fields: Union[list, dict]):
-        if table == "" or table == {} or fields == [] or fields == {}:
+        if not table or not fields:
             self.set_error(f"Empty table or fields in {inspect.stack()[0][3]} method")
             return self
 
         if isinstance(table, dict) or isinstance(table, str):
             table = self._prepare_aliases(table)
         else:
-            self.set_error(
-                f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary"
-            )
+            self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
             return self
 
         self.reset()
 
         if isinstance(fields, dict):
             values = ("?," * len(fields)).rstrip(",")
-            self._sql = (
-                f"INSERT INTO {table} ("
-                + self._prepare_fieldlist(list(fields.keys()))
-                + f") VALUES ({values})"
-            )
+            self._sql = f"INSERT INTO {table} (" + self._prepare_fieldlist(list(fields.keys())) + f") VALUES ({values})"
             self._params = tuple(fields.values())
         elif isinstance(fields, list):
             names = fields.pop(0)
             value = ("?," * len(names)).rstrip(",")
             v = f"({value}),"
             values = (v * len(fields)).rstrip(",")
-            self._sql = (
-                f"INSERT INTO {table} ("
-                + self._prepare_fieldlist(names)
-                + f") VALUES {values}"
-            )
+            self._sql = f"INSERT INTO {table} (" + self._prepare_fieldlist(names) + f") VALUES {values}"
             params = []
             for item in fields:
                 if isinstance(item, list):
@@ -528,24 +518,20 @@ class QueryBuilder:
                         params.append(subitem)
             self._params = tuple(params)
         else:
-            self.set_error(
-                f"Incorrect type of fields in {inspect.stack()[0][3]} method. Fields must be String, List or Dictionary"
-            )
+            self.set_error(f"Incorrect type of fields in {inspect.stack()[0][3]} method. Fields must be String, List or Dictionary")
             return self
 
         return self
 
     def update(self, table: Union[str, dict], fields: Union[list, dict]):
-        if table == "" or table == {} or fields == [] or fields == {}:
+        if not table or not fields:
             self.set_error(f"Empty table or fields in {inspect.stack()[0][3]} method")
             return self
 
         if isinstance(table, dict) or isinstance(table, str):
             table = self._prepare_aliases(table)
         else:
-            self.set_error(
-                f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary"
-            )
+            self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
             return self
 
         if isinstance(fields, list) or isinstance(fields, dict):
@@ -554,9 +540,7 @@ class QueryBuilder:
                 sets += f" {self._prepare_field(item)} = ?,"
             sets = sets.rstrip(",")
         else:
-            self.set_error(
-                f"Incorrect type of fields in {inspect.stack()[0][3]} method. Fields must be String, List or Dictionary"
-            )
+            self.set_error(f"Incorrect type of fields in {inspect.stack()[0][3]} method. Fields must be String, List or Dictionary")
             return self
 
         self.reset()
@@ -566,29 +550,20 @@ class QueryBuilder:
 
         return self
 
-    def join(
-        self,
-        table: Union[str, dict] = "",
-        on: Union[str, tuple, list] = (),
-        join_type: str = "INNER",
-    ):
+    def join(self, table: Union[str, dict] = "", on: Union[str, tuple, list] = (), join_type: str = "INNER"):
         join_type = join_type.upper()
         if join_type == "" or join_type not in self._JOIN_TYPES:
-            self.set_error(
-                f"Empty join_type or is not allowed in {inspect.stack()[0][3]} method"
-            )
+            self.set_error(f"Empty join_type or is not allowed in {inspect.stack()[0][3]} method")
             return self
 
-        if table == "" or table == {}:
+        if not table:
             self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
             return self
 
         if isinstance(table, dict) or isinstance(table, str):
             self._sql += f" {join_type} JOIN {self._prepare_aliases(table)}"
         else:
-            self.set_error(
-                f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary"
-            )
+            self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
             return self
 
         if on:
@@ -599,17 +574,15 @@ class QueryBuilder:
             elif isinstance(on, str):
                 self._sql += f" ON {on}"
             else:
-                self.set_error(
-                    f"Incorrect type of on in {inspect.stack()[0][3]} method. On must be String, Tuple or List"
-                )
+                self.set_error(f"Incorrect type of on in {inspect.stack()[0][3]} method. On must be String, Tuple or List")
                 return self
 
         self.set_error()
-
         return self
 
     def drop(self, table: str, add_exists: bool = True):
-        if table == "":
+        # this method will be moved to another class
+        if not table:
             self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
             return self
 
@@ -621,7 +594,8 @@ class QueryBuilder:
         return self
 
     def truncate(self, table: str):
-        if table == "":
+        # this method will be moved to another class
+        if not table:
             self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
             return self
 
