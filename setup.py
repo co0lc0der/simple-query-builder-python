@@ -6,10 +6,10 @@ from setuptools import setup
 """
 :authors: co0lc0der
 :license: MIT
-:copyright: (c) 2022 co0lc0der
+:copyright: (c) 2022-2023 co0lc0der
 """
 
-version = '0.3.4'
+version = '0.3.5'
 
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
