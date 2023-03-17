@@ -392,6 +392,24 @@ class QueryBuilder:
                 self.where([[cond[0], "NOT LIKE", cond[1]]])
         return self
 
+    def is_null(self, field: str = ""):
+        if not field:
+            self.set_error(f"Empty field in {inspect.stack()[0][3]} method")
+            return self
+        self.where([[field, "IS NULL"]])
+        return self
+
+    def is_not_null(self, field: str):
+        if not field:
+            self.set_error(f"Empty field in {inspect.stack()[0][3]} method")
+            return self
+        self.where([[field, "IS NOT NULL"]])
+        return self
+
+    def not_null(self, field: str):
+        self.is_not_null(field)
+        return self
+
     def limit(self, limit: int = 1):
         self._sql += f" LIMIT {limit}"
         return self
