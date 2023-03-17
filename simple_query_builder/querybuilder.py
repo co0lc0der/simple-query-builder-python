@@ -148,12 +148,15 @@ class QueryBuilder:
         return new_sql
 
     def get_sql(self) -> str:
-        # Replace ? with markers
         sql = self._sql
         params = self._params
         if params:
+            # Replace ? with markers
             for p in params:
-                sql = sql.replace("?", str(p), 1)
+                if isinstance(p, str):
+                    sql = sql.replace("?", f"'{p}'", 1)
+                else:
+                    sql = sql.replace("?", str(p), 1)
         return sql
 
     def get_error(self) -> bool:
