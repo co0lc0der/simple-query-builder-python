@@ -43,10 +43,10 @@ pip install https://github.com/co0lc0der/simple-query-builder-python/archive/mai
 - `reset()` resets state to default values
 - `all()` executes SQL query and returns all rows of result (`fetchall()`)
 - `one()` executes SQL query and returns the first row of result (`fetchone()`)
-- `column(col_index)` executes SQL query and returns the needed column of result, `col_index` is `0` by default
-- `pluck(key_index, col_index)` executes SQL query and returns a list of tuples (the key (usually ID) and the needed column of result), `key_index` is `0` and `col_index` is `1` by default
+- `column(col)` executes SQL query and returns the needed column of result by its index or name, `col` is `0` by default
+- `pluck(key, col)` executes SQL query and returns a list of tuples/dicts (the key (usually ID) and the needed column of result) by its indexes or names, `key` is `0` and `col` is `1` by default
 - `go()` this method is for non `SELECT` queries. it executes SQL query and returns nothing (but returns the last inserted row ID for `INSERT` method)
-- `exists()` returns `True` if SQL query has a row
+- `exists()` returns `True` if SQL query has a row and `False` if it hasn't
 - `count()` prepares a query with SQL `COUNT(*)` function and executes it
 - `query(sql, params, fetch_type, col_index)` executes prepared `sql` with `params`, it can be used for custom queries
 - 'SQL' methods are presented in [Usage section](#usage-examples)
