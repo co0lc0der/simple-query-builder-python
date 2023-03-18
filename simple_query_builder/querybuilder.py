@@ -284,10 +284,10 @@ class QueryBuilder:
                         field = self._prepare_field(cond[0])
                         value = cond[1]
 
-                        if value.lower() == "is null":
+                        if isinstance(value, str) and value.lower() == "is null":
                             operator = "IS NULL"
                             sql += f"({field} {operator})"
-                        elif value.lower() == "is not null":
+                        elif isinstance(value, str) and value.lower() == "is not null":
                             operator = "IS NOT NULL"
                             sql += f"({field} {operator})"
                         elif isinstance(value, list) or isinstance(value, tuple):
