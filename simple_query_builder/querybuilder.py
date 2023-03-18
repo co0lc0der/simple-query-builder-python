@@ -98,7 +98,7 @@ class QueryBuilder:
                 [(col[0], r[idx]) for idx, col in enumerate(c.description)]
             )
 
-    def query(self, sql: str = "", params=(), fetch=2, column=0):
+    def query(self, sql: str = "", params: tuple = (), fetch: int = 2, column: Union[str, int] = 0):
         if fetch == 2:
             fetch = self._FETCH_ALL
 
