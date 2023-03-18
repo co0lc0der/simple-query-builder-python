@@ -80,18 +80,23 @@ class QueryBuilder:
     _error_message: str = ""
     _print_errors: bool = False
     _result: Union[tuple, list] = []
+    _result_dict = True
     _count: int = -1
     _params: tuple = ()
 
     def __init__(self, database: DataBase, db_name: str = "", result_dict: bool = True, print_errors: bool = False) -> None:
         self._conn = database.connect(db_name)
         self._print_errors = print_errors
+        self._set_row_factory(result_dict)
+        self._cur = self._conn.cursor()
+
+    def _set_row_factory(self, result_dict: bool = True):
+        self._result_dict = result_dict
         # self._conn.row_factory = sqlite3.Row
-        if result_dict:
+        if self._result_dict:
             self._conn.row_factory = lambda c, r: dict(
                 [(col[0], r[idx]) for idx, col in enumerate(c.description)]
             )
-        self._cur = self._conn.cursor()
 
     def query(self, sql: str = "", params=(), fetch=2, column=0):
         if fetch == 2:
