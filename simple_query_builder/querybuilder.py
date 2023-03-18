@@ -208,7 +208,11 @@ class QueryBuilder:
         self.query(self._sql, self._params, self._NO_FETCH)
         return self._cur.lastrowid
 
-    def column(self, column: int = 0) -> Union[tuple, list, dict, None]:
+    def column(self, column: Union[str, int] = 0):
+        if (self._result_dict and isinstance(column, int)) or (not self._result_dict and isinstance(column, str)):
+            self.set_error(f"Incorrect type of column in {inspect.stack()[0][3]} method. Result dict is {self._result_dict}")
+            return self
+
         self.query("", (), self._FETCH_COLUMN, column)
         return self._result
 
