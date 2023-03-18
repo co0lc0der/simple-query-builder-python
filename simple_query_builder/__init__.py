@@ -7,5 +7,5 @@
 from .querybuilder import *
 
 __author__ = 'co0lc0der'
-__version__ = '0.3.5'
+__version__ = '0.3.6'
 __email__ = 'c0der@ya.ru'

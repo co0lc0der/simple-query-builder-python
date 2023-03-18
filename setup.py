@@ -9,7 +9,7 @@ from setuptools import setup
 :copyright: (c) 2022-2023 co0lc0der
 """
 
-version = '0.3.5'
+version = '0.3.6'
 
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
