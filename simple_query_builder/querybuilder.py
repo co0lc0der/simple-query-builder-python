@@ -212,7 +212,15 @@ class QueryBuilder:
         self.query("", (), self._FETCH_COLUMN, column)
         return self._result
 
-    def pluck(self, key: int = 0, column: int = 1) -> Union[tuple, list, dict, None]:
+    def pluck(self, key: Union[str, int] = 0, column: Union[str, int] = 1):
+        if (
+                self._result_dict and (isinstance(key, int) or isinstance(column, int))
+            ) or (
+                not self._result_dict and (isinstance(key, str) or isinstance(column, str))
+            ):
+            self.set_error(f"Incorrect type of key or column in {inspect.stack()[0][3]} method. Result dict is {self._result_dict}")
+            return self
+
         self.query()
         return [(x[key], x[column]) for x in self._result]
 
