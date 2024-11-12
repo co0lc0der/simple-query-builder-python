@@ -1,7 +1,7 @@
 """
 :authors: co0lc0der
 :license: MIT
-:copyright: (c) 2022-2023 co0lc0der
+:copyright: (c) 2022-2024 co0lc0der
 """
 
 from .querybuilder import *
