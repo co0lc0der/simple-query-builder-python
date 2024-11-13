@@ -1,42 +1,14 @@
 """
 :authors: co0lc0der
 :license: MIT
-:copyright: (c) 2022-2023 co0lc0der
+:copyright: (c) 2022-2024 co0lc0der
 """
 
 import inspect
-import sqlite3
 import sys
 import traceback
 from typing import Union
-
-
-class MetaSingleton(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(MetaSingleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
-
-
-class DataBase(metaclass=MetaSingleton):
-    db_name = "db.db"
-    conn = None
-    cursor = None
-
-    def connect(self, db_name=""):
-        if db_name != "":
-            self.db_name = db_name
-
-        if self.conn is None:
-            self.conn = sqlite3.connect(self.db_name)
-            self.cursor = self.conn.cursor()
-
-        return self.conn
-
-    def c(self):
-        return self.cursor
+from database import *
 
 
 class QueryBuilder:
@@ -84,8 +56,9 @@ class QueryBuilder:
     _count: int = -1
     _params: tuple = ()
 
-    def __init__(self, database: DataBase, db_name: str = "", result_dict: bool = True, print_errors: bool = False) -> None:
-        self._conn = database.connect(db_name)
+    def __init__(self, database: DataBase, db_name: str = "", result_dict: bool = True,
+                 print_errors: bool = False, uri: bool = False) -> None:
+        self._conn = database.connect(db_name, uri)
         self._print_errors = print_errors
         self._set_row_factory(result_dict)
         self._cur = self._conn.cursor()
