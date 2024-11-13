@@ -23,10 +23,12 @@ class DataBase(metaclass=MetaSingleton):
 
     def connect(self, db_name=""):
         if db_name != "":
+    def connect(self, db_name: str = "", uri: bool = False):
+        if db_name:
             self.db_name = db_name
 
         if self.conn is None:
-            self.conn = sqlite3.connect(self.db_name)
+            self.conn = sqlite3.connect(self.db_name, uri=uri)
             self.cursor = self.conn.cursor()
 
         return self.conn
