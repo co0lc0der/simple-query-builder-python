@@ -56,8 +56,9 @@ class QueryBuilder:
     _count: int = -1
     _params: tuple = ()
 
-    def __init__(self, database: DataBase, db_name: str = "", result_dict: bool = True, print_errors: bool = False) -> None:
-        self._conn = database.connect(db_name)
+    def __init__(self, database: DataBase, db_name: str = "", result_dict: bool = True,
+                 print_errors: bool = False, uri: bool = False) -> None:
+        self._conn = database.connect(db_name, uri)
         self._print_errors = print_errors
         self._set_row_factory(result_dict)
         self._cur = self._conn.cursor()
