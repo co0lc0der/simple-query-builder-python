@@ -64,6 +64,7 @@ class QueryBuilder:
     _result_dict = True
     _count: int = -1
     _params: tuple = ()
+    _fields = []
 
     def __init__(self, database: DataBase, db_name: str = "", result_dict: bool = True,
                  print_errors: bool = False, uri: bool = False) -> None:
@@ -176,6 +177,7 @@ class QueryBuilder:
     def reset(self) -> bool:
         self._sql = ""
         self._params = ()
+        self._fields = []
         self._query = None
         self._result = []
         self._count = -1
@@ -526,6 +528,8 @@ class QueryBuilder:
             self.set_error(f"Empty table or fields in {inspect.stack()[0][3]} method")
             return self
 
+        self._fields = fields
+
         if isinstance(table, dict) or isinstance(table, str):
             table = self._prepare_aliases(table)
         else:
@@ -560,6 +564,8 @@ class QueryBuilder:
         if not table or not fields:
             self.set_error(f"Empty table or fields in {inspect.stack()[0][3]} method")
             return self
+
+        self._fields = fields
 
         if isinstance(table, dict) or isinstance(table, str):
             table = self._prepare_aliases(table)
