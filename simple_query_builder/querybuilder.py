@@ -146,7 +146,11 @@ class QueryBuilder:
                     sql = sql.replace("?", str(p), 1)
         return sql
 
+    # Logics of this method will be changed in next version
     def get_error(self) -> bool:
+        return self._error
+
+    def has_error(self) -> bool:
         return self._error
 
     def get_error_message(self) -> str:
