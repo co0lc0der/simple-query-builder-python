@@ -624,6 +624,38 @@ class QueryBuilder:
         self.set_error()
         return self
 
+    def union(self, union_all: bool = False):
+        self._concat = True
+        self._sql += " UNION ALL " if union_all else " UNION "
+        return self
+
+    def union_select(self, table: Union[str, dict], union_all: bool = False):
+        if not table:
+            self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
+            return self
+
+        if 'UNION' in self._sql:
+            self.set_error(f"SQL has already UNION in {inspect.stack()[0][3]} method")
+            return self
+
+        self._concat = True
+        fields = self._fields
+        self._sql += " UNION ALL " if union_all else " UNION "
+
+        if isinstance(fields, dict) or isinstance(fields, list) or isinstance(fields, str):
+            self._sql += f"SELECT {self._prepare_aliases(fields)}"
+        else:
+            self.set_error(f"Incorrect type of fields in {inspect.stack()[0][3]} method. Fields must be String, List or Dictionary")
+            return self
+
+        if isinstance(table, dict) or isinstance(table, str):
+            self._sql += f" FROM {self._prepare_aliases(table)}"
+        else:
+            self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
+            return self
+
+        return self
+
     def drop(self, table: str, add_exists: bool = True):
         # this method will be moved to another class
         if not table:
