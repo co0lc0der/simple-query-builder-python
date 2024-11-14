@@ -57,6 +57,7 @@ class QueryBuilder:
     _cur = None
     _query = None
     _sql: str = ""
+    _concat = False
     _error: bool = False
     _error_message: str = ""
     _print_errors: bool = False
@@ -182,6 +183,7 @@ class QueryBuilder:
         self._result = []
         self._count = -1
         self.set_error()
+        self._concat = False
         return True
 
     def all(self) -> Union[tuple, list, dict, None]:
@@ -334,10 +336,13 @@ class QueryBuilder:
             self.set_error(f"Empty table or fields in {inspect.stack()[0][3]} method")
             return self
 
-        self.reset()
-
         if isinstance(fields, dict) or isinstance(fields, list) or isinstance(fields, str):
-            self._sql = f"SELECT {self._prepare_aliases(fields)}"
+            if self._concat:
+                self._sql += f"SELECT {self._prepare_aliases(fields)}"
+            else:
+                self.reset()
+                self._sql = f"SELECT {self._prepare_aliases(fields)}"
+            self._fields = fields
         else:
             self.set_error(f"Incorrect type of fields in {inspect.stack()[0][3]} method. Fields must be String, List or Dictionary")
             return self
