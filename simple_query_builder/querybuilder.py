@@ -24,6 +24,15 @@ class QueryBuilder:
         "IN",
         "NOT IN",
     ]
+    _MATH_OPERATORS: list = [
+        "+",
+        "-",
+        "*",
+        "/",
+        "%",
+        "(",
+        ")",
+    ]
     _LOGICS: list = [
         "AND",
         "OR",
@@ -190,11 +199,8 @@ class QueryBuilder:
         return self._result
 
     def pluck(self, key: Union[str, int] = 0, column: Union[str, int] = 1):
-        if (
-                self._result_dict and (isinstance(key, int) or isinstance(column, int))
-            ) or (
-                not self._result_dict and (isinstance(key, str) or isinstance(column, str))
-            ):
+        if (self._result_dict and (isinstance(key, int) or isinstance(column, int))) or\
+                (not self._result_dict and (isinstance(key, str) or isinstance(column, str))):
             self.set_error(f"Incorrect type of key or column in {inspect.stack()[0][3]} method. Result dict is {self._result_dict}")
             return self
 
@@ -440,7 +446,7 @@ class QueryBuilder:
             self.set_error(f"Empty field in {inspect.stack()[0][3]} method")
             return ""
 
-        if field.find("(") > -1 or field.find(")") > -1 or field.find("*") > -1:
+        if any(x in field for x in self._MATH_OPERATORS):
             if field.find(" AS ") > -1:
                 field = field.replace(" AS ", " AS `")
                 return f"{field}`"
