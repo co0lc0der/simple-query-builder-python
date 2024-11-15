@@ -656,6 +656,9 @@ class QueryBuilder:
 
         return self
 
+    def __str__(self):
+        return self.get_sql()
+
     def drop(self, table: str, add_exists: bool = True):
         # this method will be moved to another class
         if not table:
