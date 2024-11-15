@@ -19,12 +19,13 @@ class QueryBuilder:
         ">=",
         "<=",
         "!=",
+        "<>",
         "LIKE",
         "NOT LIKE",
         "IN",
         "NOT IN",
     ]
-    _MATH_OPERATORS: list = [
+    _FIELD_SPEC_CHARS: list = [
         "+",
         "-",
         "*",
@@ -32,6 +33,7 @@ class QueryBuilder:
         "%",
         "(",
         ")",
+        "||",
     ]
     _LOGICS: list = [
         "AND",
@@ -348,7 +350,11 @@ class QueryBuilder:
             return self
 
         if isinstance(table, dict) or isinstance(table, str):
-            self._sql += f" FROM {self._prepare_aliases(table)}"
+            if isinstance(table, str) and any(x in table for x in self._FIELD_SPEC_CHARS) and fields == '*':
+                self._sql = f"SELECT {table}"
+                self._fields = table
+            else:
+                self._sql += f" FROM {self._prepare_aliases(table)}"
         else:
             self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
             return self
@@ -457,7 +463,7 @@ class QueryBuilder:
             self.set_error(f"Empty field in {inspect.stack()[0][3]} method")
             return ""
 
-        if any(x in field for x in self._MATH_OPERATORS):
+        if any(x in field for x in self._FIELD_SPEC_CHARS):
             if field.find(" AS ") > -1:
                 field = field.replace(" AS ", " AS `")
                 return f"{field}`"
