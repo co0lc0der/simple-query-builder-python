@@ -12,7 +12,7 @@ from database import *
 
 
 class QueryBuilder:
-    _OPERATORS: list = [
+    _COND_OPERATORS: list = [
         "=",
         ">",
         "<",
@@ -308,7 +308,7 @@ class QueryBuilder:
                         field = self._prepare_field(cond[0])
                         operator = cond[1].upper()
                         value = cond[2]
-                        if operator in self._OPERATORS:
+                        if operator in self._COND_OPERATORS:
                             if operator == "IN" and (
                                 isinstance(value, list) or isinstance(value, tuple)
                             ):
