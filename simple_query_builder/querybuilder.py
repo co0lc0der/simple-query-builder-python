@@ -136,10 +136,10 @@ class QueryBuilder:
 
         return new_sql
 
-    def get_sql(self) -> str:
+    def get_sql(self, with_values: bool = True) -> str:
         sql = self._sql
         params = self._params
-        if params:
+        if params and with_values:
             # Replace ? with markers
             for p in params:
                 if isinstance(p, str):
