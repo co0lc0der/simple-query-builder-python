@@ -525,13 +525,8 @@ class QueryBuilder:
             self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
             return self
 
-        if isinstance(table, dict) or isinstance(table, list) or isinstance(table, str):
-            self.reset()
-            self._sql = f"DELETE"
-            self._prepare_tables(table)
-        else:
-            self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
-            return self
+        self.reset()
+        self._sql = f"DELETE FROM {self._prepare_tables(table)}"
 
         return self
 
