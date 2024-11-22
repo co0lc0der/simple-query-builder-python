@@ -330,14 +330,18 @@ class QueryBuilder:
         return result
 
     def _prepare_tables(self, table: Union[str, list, dict]) -> str:
-        if isinstance(table, str) and any(x in table for x in self._FIELD_SPEC_CHARS):
-            self._sql = f"SELECT {table}"
-            self._fields = table
-        elif isinstance(table, str) and 'select' in table.lower():
-            self._sql += f" FROM ({table})"
-        else:
-            self._sql += f" FROM {self._prepare_aliases(table)}"
-        return self._sql
+        if not table:
+            self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
+            return ''
+
+        if isinstance(table, str) and 'select' in table.lower():
+            self._concat = True
+            return f"({table})"
+        elif isinstance(table, str) and any(x in table for x in self._FIELD_SPEC_CHARS):
+            # self._fields = table
+            return f"{table}"
+
+        return self._prepare_aliases(table)
 
     def select(self, table: Union[str, list, dict], fields: Union[str, list, dict] = "*"):
         if not table or not fields:
