@@ -535,15 +535,9 @@ class QueryBuilder:
             self.set_error(f"Empty table or fields in {inspect.stack()[0][3]} method")
             return self
 
-        self._fields = fields
-
-        if isinstance(table, dict) or isinstance(table, list) or isinstance(table, str):
-            table = self._prepare_aliases(table)
-        else:
-            self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
-            return self
-
         self.reset()
+        table = self._prepare_aliases(table)
+        self._fields = fields
 
         if isinstance(fields, dict):
             values = ("?," * len(fields)).rstrip(",")
