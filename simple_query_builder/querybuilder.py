@@ -659,6 +659,22 @@ class QueryBuilder:
     def __str__(self):
         return self.get_sql(False)
 
+    def create_view(self, view_name: str, add_exists: bool = True):
+        # this method will be moved to another class
+        if not view_name:
+            self.set_error(f"Empty view_name in {inspect.stack()[0][3]} method")
+            return self
+
+        exists = "IF NOT EXISTS " if add_exists else ""
+
+        # self.reset()
+        if 'select' not in self._sql.lower():
+            self.set_error(f"No select found in {inspect.stack()[0][3]} method")
+            return self
+        self._sql = f"CREATE VIEW {exists}`{view_name}` AS " + self._sql
+
+        return self
+
     def drop_view(self, view_name: str, add_exists: bool = True):
         # this method will be moved to another class
         if not view_name:
