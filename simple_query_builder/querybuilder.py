@@ -657,7 +657,20 @@ class QueryBuilder:
         return self
 
     def __str__(self):
-        return self.get_sql()
+        return self.get_sql(False)
+
+    def drop_view(self, view_name: str, add_exists: bool = True):
+        # this method will be moved to another class
+        if not view_name:
+            self.set_error(f"Empty view_name in {inspect.stack()[0][3]} method")
+            return self
+
+        exists = "IF EXISTS " if add_exists else ""
+
+        self.reset()
+        self._sql = f"DROP VIEW {exists}`{view_name}`"
+
+        return self
 
     def drop(self, table: str, add_exists: bool = True):
         # this method will be moved to another class
