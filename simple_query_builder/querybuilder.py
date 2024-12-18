@@ -634,18 +634,18 @@ class QueryBuilder:
         self._sql += " UNION ALL " if union_all else " UNION "
         return self
 
-    def union_select(self, table: Union[str, dict], union_all: bool = False):
+    def union_select(self, table: Union[str, list, dict], union_all: bool = False):
         if not table:
             self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
             return self
 
-        if 'UNION' in self._sql:
-            self.set_error(f"SQL has already UNION in {inspect.stack()[0][3]} method")
-            return self
-
         self._concat = True
-        fields = self._fields
-        self._sql += " UNION ALL " if union_all else " UNION "
+        fields = self._fields if self._fields else '*'
+        sql = self._sql
+        sql += " UNION ALL " if union_all else " UNION "
+        self._sql = sql + f"SELECT {self._prepare_aliases(fields)} FROM {self._prepare_aliases(table)}"
+
+        return self
 
         if isinstance(fields, dict) or isinstance(fields, list) or isinstance(fields, str):
             self._sql += f"SELECT {self._prepare_aliases(fields)}"
