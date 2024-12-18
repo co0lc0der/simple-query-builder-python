@@ -345,27 +345,30 @@ class QueryBuilder:
 
         return self._prepare_aliases(table)
 
-    def select(self, table: Union[str, list, dict], fields: Union[str, list, dict] = "*"):
+    def select(self, table: Union[str, list, dict], fields: Union[str, list, dict] = "*", dist: bool = False):
         if not table or not fields:
             self.set_error(f"Empty table or fields in {inspect.stack()[0][3]} method")
             return self
 
-        if isinstance(fields, dict) or isinstance(fields, list) or isinstance(fields, str):
-            if self._concat:
-                self._sql += f"SELECT {self._prepare_aliases(fields)}"
-            else:
-                self.reset()
-                self._sql = f"SELECT {self._prepare_aliases(fields)}"
-            self._fields = fields
-        else:
-            self.set_error(f"Incorrect type of fields in {inspect.stack()[0][3]} method. Fields must be String, List or Dictionary")
-            return self
+        prepared_table = self._prepare_tables(table)
+        prepared_fields = self._prepare_aliases(fields)
 
-        if isinstance(table, dict) or isinstance(table, list) or isinstance(table, str):
-            self._prepare_tables(table)
+        if not self._concat:
+            self.reset()
+
+        sql = 'SELECT '
+        sql += 'DISTINCT ' if dist else ''
+        if isinstance(table, str) and any(x in table for x in self._FIELD_SPEC_CHARS) and fields == '*':
+            sql += f"{prepared_table}"
+            self._fields = self._prepare_aliases(table)
         else:
-            self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
-            return self
+            self._fields = fields
+            sql += f"{prepared_fields} FROM {prepared_table}"
+
+        if self._concat:
+            self._sql += sql
+        else:
+            self._sql = sql
 
         return self
 
