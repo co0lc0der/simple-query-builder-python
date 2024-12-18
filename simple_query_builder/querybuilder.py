@@ -647,17 +647,14 @@ class QueryBuilder:
 
         return self
 
-        if isinstance(fields, dict) or isinstance(fields, list) or isinstance(fields, str):
-            self._sql += f"SELECT {self._prepare_aliases(fields)}"
-        else:
-            self.set_error(f"Incorrect type of fields in {inspect.stack()[0][3]} method. Fields must be String, List or Dictionary")
+    def except_select(self, table: Union[str, list, dict]):
+        if not table:
+            self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
             return self
 
-        if isinstance(table, dict) or isinstance(table, str):
-            self._sql += f" FROM {self._prepare_aliases(table)}"
-        else:
-            self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
-            return self
+        self._concat = True
+        fields = self._fields if self._fields else '*'
+        self._sql += f" EXCEPT SELECT {self._prepare_aliases(fields)} FROM {self._prepare_aliases(table)}"
 
         return self
 
