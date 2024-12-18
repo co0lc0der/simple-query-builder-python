@@ -150,8 +150,10 @@ class QueryBuilder:
                     sql = sql.replace("?", str(p), 1)
         return sql
 
-    # Logics of this method will be changed in next version
     def get_error(self) -> bool:
+        """
+        Logics of this method will be changed in next version, use has_error() instead
+        """
         return self._error
 
     def has_error(self) -> bool:
