@@ -668,6 +668,17 @@ class QueryBuilder:
         self._sql += " INTERSECT "
         return self
 
+    def intersect_select(self, table: Union[str, list, dict]):
+        if not table:
+            self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
+            return self
+
+        self._concat = True
+        fields = self._fields if self._fields else '*'
+        self._sql += f" INTERSECT SELECT {self._prepare_aliases(fields)} FROM {self._prepare_aliases(table)}"
+
+        return self
+
     def __str__(self):
         return self.get_sql(False)
 
