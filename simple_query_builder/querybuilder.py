@@ -663,6 +663,11 @@ class QueryBuilder:
 
         return self
 
+    def intersect(self):
+        self._concat = True
+        self._sql += " INTERSECT "
+        return self
+
     def __str__(self):
         return self.get_sql(False)
 
