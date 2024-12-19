@@ -647,6 +647,11 @@ class QueryBuilder:
 
         return self
 
+    def excepts(self):
+        self._concat = True
+        self._sql += " EXCEPT "
+        return self
+
     def except_select(self, table: Union[str, list, dict]):
         if not table:
             self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
@@ -662,7 +667,6 @@ class QueryBuilder:
         return self.get_sql(False)
 
     def create_view(self, view_name: str, add_exists: bool = True):
-        # this method will be moved to another class
         if not view_name:
             self.set_error(f"Empty view_name in {inspect.stack()[0][3]} method")
             return self
@@ -678,7 +682,6 @@ class QueryBuilder:
         return self
 
     def drop_view(self, view_name: str, add_exists: bool = True):
-        # this method will be moved to another class
         if not view_name:
             self.set_error(f"Empty view_name in {inspect.stack()[0][3]} method")
             return self
