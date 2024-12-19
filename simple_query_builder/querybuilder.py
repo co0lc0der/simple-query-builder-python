@@ -212,7 +212,7 @@ class QueryBuilder:
             self.set_error(f"Incorrect type of column in {inspect.stack()[0][3]} method. Result dict is {self._result_dict}")
             return self
 
-        self.query("", (), self._FETCH_COLUMN, column)
+        self.query(fetch=self._FETCH_COLUMN, column=column)
         return self._result
 
     def pluck(self, key: Union[str, int] = 0, column: Union[str, int] = 1):
@@ -245,7 +245,7 @@ class QueryBuilder:
         return self._result[-1]
 
     def exists(self) -> bool:
-        result = self.one()
+        self.one()
         return self._count > 0
 
     def _prepare_aliases(self, items: Union[str, list, dict], as_list: bool = False) -> Union[str, list]:
@@ -688,6 +688,7 @@ class QueryBuilder:
         return self.get_sql(False)
 
     def create_view(self, view_name: str, add_exists: bool = True):
+        # this method will be moved to another class
         if not view_name:
             self.set_error(f"Empty view_name in {inspect.stack()[0][3]} method")
             return self
@@ -703,6 +704,7 @@ class QueryBuilder:
         return self
 
     def drop_view(self, view_name: str, add_exists: bool = True):
+        # this method will be moved to another class
         if not view_name:
             self.set_error(f"Empty view_name in {inspect.stack()[0][3]} method")
             return self

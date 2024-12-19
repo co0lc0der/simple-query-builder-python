@@ -17,19 +17,21 @@ class MetaSingleton(type):
 
 
 class DataBase(metaclass=MetaSingleton):
-    db_name = "db.db"
+    driver = "sqlite"
+    db_name = ":memory:"
     conn = None
     cursor = None
 
-    def connect(self, db_name=""):
-        if db_name != "":
     def connect(self, db_name: str = "", uri: bool = False):
         if db_name:
             self.db_name = db_name
 
         if self.conn is None:
-            self.conn = sqlite3.connect(self.db_name, uri=uri)
-            self.cursor = self.conn.cursor()
+            if self.driver == "sqlite":
+                self.conn = sqlite3.connect(self.db_name, uri=uri)
+                self.cursor = self.conn.cursor()
+            else:
+                print("Wrong DB driver. At present time it's supported 'sqlite' only")
 
         return self.conn
 
