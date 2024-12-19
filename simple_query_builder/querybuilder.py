@@ -60,6 +60,7 @@ class QueryBuilder:
     _FETCH_ONE: int = 1
     _FETCH_ALL: int = 2
     _FETCH_COLUMN: int = 3
+    _db = None
     _conn = None
     _cur = None
     _query = None
@@ -76,10 +77,14 @@ class QueryBuilder:
 
     def __init__(self, database: DataBase, db_name: str = "", result_dict: bool = True,
                  print_errors: bool = False, uri: bool = False) -> None:
-        self._conn = database.connect(db_name, uri)
+        if database:
+            self._db = database
+            self._conn = self._db.connect(db_name, uri)
+            self._set_row_factory(result_dict)
+            self._cur = self._conn.cursor()
+        else:
+            self.set_error(f"Empty database in {inspect.stack()[0][3]} method")
         self._print_errors = print_errors
-        self._set_row_factory(result_dict)
-        self._cur = self._conn.cursor()
 
     def _set_row_factory(self, result_dict: bool = True):
         self._result_dict = result_dict
