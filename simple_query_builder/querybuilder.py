@@ -51,6 +51,11 @@ class QueryBuilder:
         "FULL OUTER",
         "CROSS"
     ]
+    _SQLITE_JOIN_TYPES: list = [
+        "INNER",
+        "LEFT OUTER",
+        "CROSS"
+    ]
     _NO_FETCH: int = 0
     _FETCH_ONE: int = 1
     _FETCH_ALL: int = 2
@@ -601,7 +606,7 @@ class QueryBuilder:
 
     def join(self, table: Union[str, dict] = "", on: Union[str, tuple, list] = (), join_type: str = "INNER"):
         join_type = join_type.upper()
-        if join_type == "" or join_type not in self._JOIN_TYPES:
+        if join_type == "" or join_type not in self._SQLITE_JOIN_TYPES:
             self.set_error(f"Empty join_type or is not allowed in {inspect.stack()[0][3]} method")
             return self
 
