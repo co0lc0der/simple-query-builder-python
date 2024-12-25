@@ -71,7 +71,7 @@ Result query
 UPDATE `users` SET `username` = 'John Doe', `status` = 'new status'
 WHERE `id` = 7 LIMIT 1;
 ```
-More examples you can find in [documentation](docs/index.md)
+More examples you can find in [documentation](https://github.com/co0lc0der/simple-query-builder-python/blob/main/docs/index.md)
 
 ## ToDo
 I'm going to add the next features into future versions
