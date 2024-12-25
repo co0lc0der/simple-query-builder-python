@@ -1,56 +1,39 @@
 """
 :authors: co0lc0der
 :license: MIT
-:copyright: (c) 2022-2023 co0lc0der
+:copyright: (c) 2022-2024 co0lc0der
 """
 
 import inspect
-import sqlite3
 import sys
 import traceback
 from typing import Union
-
-
-class MetaSingleton(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(MetaSingleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
-
-
-class DataBase(metaclass=MetaSingleton):
-    db_name = "db.db"
-    conn = None
-    cursor = None
-
-    def connect(self, db_name=""):
-        if db_name != "":
-            self.db_name = db_name
-
-        if self.conn is None:
-            self.conn = sqlite3.connect(self.db_name)
-            self.cursor = self.conn.cursor()
-
-        return self.conn
-
-    def c(self):
-        return self.cursor
+from database import *
 
 
 class QueryBuilder:
-    _OPERATORS: list = [
+    _COND_OPERATORS: list = [
         "=",
         ">",
         "<",
         ">=",
         "<=",
         "!=",
+        "<>",
         "LIKE",
         "NOT LIKE",
         "IN",
         "NOT IN",
+    ]
+    _FIELD_SPEC_CHARS: list = [
+        "+",
+        "-",
+        "*",
+        "/",
+        "%",
+        "(",
+        ")",
+        "||",
     ]
     _LOGICS: list = [
         "AND",
@@ -63,19 +46,28 @@ class QueryBuilder:
     ]
     _JOIN_TYPES: list = [
         "INNER",
+        "LEFT",
         "LEFT OUTER",
         "RIGHT OUTER",
         "FULL OUTER",
+        "CROSS"
+    ]
+    _SQLITE_JOIN_TYPES: list = [
+        "INNER",
+        "LEFT",
+        "LEFT OUTER",
         "CROSS"
     ]
     _NO_FETCH: int = 0
     _FETCH_ONE: int = 1
     _FETCH_ALL: int = 2
     _FETCH_COLUMN: int = 3
+    _db = None
     _conn = None
     _cur = None
     _query = None
     _sql: str = ""
+    _concat = False
     _error: bool = False
     _error_message: str = ""
     _print_errors: bool = False
@@ -83,12 +75,18 @@ class QueryBuilder:
     _result_dict = True
     _count: int = -1
     _params: tuple = ()
+    _fields = []
 
-    def __init__(self, database: DataBase, db_name: str = "", result_dict: bool = True, print_errors: bool = False) -> None:
-        self._conn = database.connect(db_name)
+    def __init__(self, database: DataBase, db_name: str = "", result_dict: bool = True,
+                 print_errors: bool = False, uri: bool = False) -> None:
+        if database:
+            self._db = database
+            self._conn = self._db.connect(db_name, uri)
+            self._set_row_factory(result_dict)
+            self._cur = self._conn.cursor()
+        else:
+            self.set_error(f"Empty database in {inspect.stack()[0][3]} method")
         self._print_errors = print_errors
-        self._set_row_factory(result_dict)
-        self._cur = self._conn.cursor()
 
     def _set_row_factory(self, result_dict: bool = True):
         self._result_dict = result_dict
@@ -152,10 +150,10 @@ class QueryBuilder:
 
         return new_sql
 
-    def get_sql(self) -> str:
+    def get_sql(self, with_values: bool = True) -> str:
         sql = self._sql
         params = self._params
-        if params:
+        if params and with_values:
             # Replace ? with markers
             for p in params:
                 if isinstance(p, str):
@@ -165,6 +163,12 @@ class QueryBuilder:
         return sql
 
     def get_error(self) -> bool:
+        """
+        Logics of this method will be changed in next version, use has_error() instead
+        """
+        return self._error
+
+    def has_error(self) -> bool:
         return self._error
 
     def get_error_message(self) -> str:
@@ -176,7 +180,7 @@ class QueryBuilder:
         self._error = bool(message)
         self._error_message = message
         if self._print_errors and self._error:
-            print(self._error_message)
+            print("QueryBuilder error:", self._error_message)
 
     def get_params(self) -> tuple:
         return self._params
@@ -190,10 +194,12 @@ class QueryBuilder:
     def reset(self) -> bool:
         self._sql = ""
         self._params = ()
+        self._fields = []
         self._query = None
         self._result = []
         self._count = -1
         self.set_error()
+        self._concat = False
         return True
 
     def all(self) -> Union[tuple, list, dict, None]:
@@ -213,15 +219,12 @@ class QueryBuilder:
             self.set_error(f"Incorrect type of column in {inspect.stack()[0][3]} method. Result dict is {self._result_dict}")
             return self
 
-        self.query("", (), self._FETCH_COLUMN, column)
+        self.query(fetch=self._FETCH_COLUMN, column=column)
         return self._result
 
     def pluck(self, key: Union[str, int] = 0, column: Union[str, int] = 1):
-        if (
-                self._result_dict and (isinstance(key, int) or isinstance(column, int))
-            ) or (
-                not self._result_dict and (isinstance(key, str) or isinstance(column, str))
-            ):
+        if (self._result_dict and (isinstance(key, int) or isinstance(column, int))) or\
+                (not self._result_dict and (isinstance(key, str) or isinstance(column, str))):
             self.set_error(f"Incorrect type of key or column in {inspect.stack()[0][3]} method. Result dict is {self._result_dict}")
             return self
 
@@ -249,7 +252,7 @@ class QueryBuilder:
         return self._result[-1]
 
     def exists(self) -> bool:
-        result = self.one()
+        self.one()
         return self._count > 0
 
     def _prepare_aliases(self, items: Union[str, list, dict], as_list: bool = False) -> Union[str, list]:
@@ -268,11 +271,7 @@ class QueryBuilder:
                     elif isinstance(item, dict):
                         first_item = list(item.values())[0]
                         alias = list(item.keys())[0]
-                        sql.append(
-                            first_item
-                            if isinstance(alias, int)
-                            else f"{first_item} AS {alias}"
-                        )
+                        sql.append(first_item if isinstance(alias, int) else f"{first_item} AS {alias}")
                 elif isinstance(items, dict):
                     new_item = items[item]
                     sql.append(new_item if isinstance(item, int) else f"{new_item} AS {item}")
@@ -321,7 +320,7 @@ class QueryBuilder:
                         field = self._prepare_field(cond[0])
                         operator = cond[1].upper()
                         value = cond[2]
-                        if operator in self._OPERATORS:
+                        if operator in self._COND_OPERATORS:
                             if operator == "IN" and (
                                 isinstance(value, list) or isinstance(value, tuple)
                             ):
@@ -344,24 +343,44 @@ class QueryBuilder:
 
         return result
 
-    def select(self, table: Union[str, dict], fields: Union[str, list, dict] = "*"):
+    def _prepare_tables(self, table: Union[str, list, dict]) -> str:
+        if not table:
+            self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
+            return ''
+
+        if isinstance(table, str) and 'select' in table.lower():
+            self._concat = True
+            return f"({table})"
+        elif isinstance(table, str) and any(x in table for x in self._FIELD_SPEC_CHARS):
+            # self._fields = table
+            return f"{table}"
+
+        return self._prepare_aliases(table)
+
+    def select(self, table: Union[str, list, dict], fields: Union[str, list, dict] = "*", dist: bool = False):
         if not table or not fields:
             self.set_error(f"Empty table or fields in {inspect.stack()[0][3]} method")
             return self
 
-        self.reset()
+        prepared_table = self._prepare_tables(table)
+        prepared_fields = self._prepare_aliases(fields)
 
-        if isinstance(fields, dict) or isinstance(fields, list) or isinstance(fields, str):
-            self._sql = f"SELECT {self._prepare_aliases(fields)}"
-        else:
-            self.set_error(f"Incorrect type of fields in {inspect.stack()[0][3]} method. Fields must be String, List or Dictionary")
-            return self
+        if not self._concat:
+            self.reset()
 
-        if isinstance(table, dict) or isinstance(table, str):
-            self._sql += f" FROM {self._prepare_aliases(table)}"
+        sql = 'SELECT '
+        sql += 'DISTINCT ' if dist else ''
+        if isinstance(table, str) and any(x in table for x in self._FIELD_SPEC_CHARS) and fields == '*':
+            sql += f"{prepared_table}"
+            self._fields = self._prepare_aliases(table)
         else:
-            self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
-            return self
+            self._fields = fields
+            sql += f"{prepared_fields} FROM {prepared_table}"
+
+        if self._concat:
+            self._sql += sql
+        else:
+            self._sql = sql
 
         return self
 
@@ -443,7 +462,8 @@ class QueryBuilder:
         return self
 
     def limit(self, limit: int = 1):
-        self._sql += f" LIMIT {limit}"
+        if 'DELETE' not in self._sql:
+            self._sql += f" LIMIT {limit}"
         return self
 
     def offset(self, offset: int = 0):
@@ -467,7 +487,7 @@ class QueryBuilder:
             self.set_error(f"Empty field in {inspect.stack()[0][3]} method")
             return ""
 
-        if field.find("(") > -1 or field.find(")") > -1 or field.find("*") > -1:
+        if any(x in field for x in self._FIELD_SPEC_CHARS):
             if field.find(" AS ") > -1:
                 field = field.replace(" AS ", " AS `")
                 return f"{field}`"
@@ -522,34 +542,24 @@ class QueryBuilder:
 
         return self
 
-    def delete(self, table: Union[str, dict]):
+    def delete(self, table: Union[str, list, dict]):
         if not table:
             self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
             return self
 
-        if isinstance(table, dict) or isinstance(table, str):
-            table = self._prepare_aliases(table)
-        else:
-            self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
-            return self
-
         self.reset()
+        self._sql = f"DELETE FROM {self._prepare_tables(table)}"
 
-        self._sql = f"DELETE FROM {table}"
         return self
 
-    def insert(self, table: Union[str, dict], fields: Union[list, dict]):
+    def insert(self, table: Union[str, list, dict], fields: Union[list, dict]):
         if not table or not fields:
             self.set_error(f"Empty table or fields in {inspect.stack()[0][3]} method")
             return self
 
-        if isinstance(table, dict) or isinstance(table, str):
-            table = self._prepare_aliases(table)
-        else:
-            self.set_error(f"Incorrect type of table in {inspect.stack()[0][3]} method. Table must be String or Dictionary")
-            return self
-
         self.reset()
+        table = self._prepare_aliases(table)
+        self._fields = fields
 
         if isinstance(fields, dict):
             values = ("?," * len(fields)).rstrip(",")
@@ -578,6 +588,8 @@ class QueryBuilder:
             self.set_error(f"Empty table or fields in {inspect.stack()[0][3]} method")
             return self
 
+        self._fields = fields
+
         if isinstance(table, dict) or isinstance(table, str):
             table = self._prepare_aliases(table)
         else:
@@ -602,9 +614,14 @@ class QueryBuilder:
 
     def join(self, table: Union[str, dict] = "", on: Union[str, tuple, list] = (), join_type: str = "INNER"):
         join_type = join_type.upper()
-        if join_type == "" or join_type not in self._JOIN_TYPES:
-            self.set_error(f"Empty join_type or is not allowed in {inspect.stack()[0][3]} method")
-            return self
+        if self._db.get_driver() == 'sqlite':
+            if join_type == "" or join_type not in self._SQLITE_JOIN_TYPES:
+                self.set_error(f"Empty join_type or is not allowed in {inspect.stack()[0][3]} method. Try one of these {self._SQLITE_JOIN_TYPES}")
+                return self
+        else:
+            if join_type == "" or join_type not in self._JOIN_TYPES:
+                self.set_error(f"Empty join_type or is not allowed in {inspect.stack()[0][3]} method. Try one of these {self._JOIN_TYPES}")
+                return self
 
         if not table:
             self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
@@ -628,6 +645,88 @@ class QueryBuilder:
                 return self
 
         self.set_error()
+        return self
+
+    def union(self, union_all: bool = False):
+        self._concat = True
+        self._sql += " UNION ALL " if union_all else " UNION "
+        return self
+
+    def union_select(self, table: Union[str, list, dict], union_all: bool = False):
+        if not table:
+            self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
+            return self
+
+        self._concat = True
+        fields = self._fields if self._fields else '*'
+        sql = self._sql
+        sql += " UNION ALL " if union_all else " UNION "
+        self._sql = sql + f"SELECT {self._prepare_aliases(fields)} FROM {self._prepare_aliases(table)}"
+
+        return self
+
+    def excepts(self):
+        self._concat = True
+        self._sql += " EXCEPT "
+        return self
+
+    def except_select(self, table: Union[str, list, dict]):
+        if not table:
+            self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
+            return self
+
+        self._concat = True
+        fields = self._fields if self._fields else '*'
+        self._sql += f" EXCEPT SELECT {self._prepare_aliases(fields)} FROM {self._prepare_aliases(table)}"
+
+        return self
+
+    def intersect(self):
+        self._concat = True
+        self._sql += " INTERSECT "
+        return self
+
+    def intersect_select(self, table: Union[str, list, dict]):
+        if not table:
+            self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
+            return self
+
+        self._concat = True
+        fields = self._fields if self._fields else '*'
+        self._sql += f" INTERSECT SELECT {self._prepare_aliases(fields)} FROM {self._prepare_aliases(table)}"
+
+        return self
+
+    def __str__(self):
+        return self.get_sql(False)
+
+    def create_view(self, view_name: str, add_exists: bool = True):
+        # this method will be moved to another class
+        if not view_name:
+            self.set_error(f"Empty view_name in {inspect.stack()[0][3]} method")
+            return self
+
+        exists = "IF NOT EXISTS " if add_exists else ""
+
+        # self.reset()
+        if 'select' not in self._sql.lower():
+            self.set_error(f"No select found in {inspect.stack()[0][3]} method")
+            return self
+        self._sql = f"CREATE VIEW {exists}`{view_name}` AS " + self._sql
+
+        return self
+
+    def drop_view(self, view_name: str, add_exists: bool = True):
+        # this method will be moved to another class
+        if not view_name:
+            self.set_error(f"Empty view_name in {inspect.stack()[0][3]} method")
+            return self
+
+        exists = "IF EXISTS " if add_exists else ""
+
+        self.reset()
+        self._sql = f"DROP VIEW {exists}`{view_name}`"
+
         return self
 
     def drop(self, table: str, add_exists: bool = True):
