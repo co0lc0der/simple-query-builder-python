@@ -462,7 +462,8 @@ class QueryBuilder:
         return self
 
     def limit(self, limit: int = 1):
-        self._sql += f" LIMIT {limit}"
+        if 'DELETE' not in self._sql:
+            self._sql += f" LIMIT {limit}"
         return self
 
     def offset(self, offset: int = 0):
