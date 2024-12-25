@@ -46,6 +46,7 @@ class QueryBuilder:
     ]
     _JOIN_TYPES: list = [
         "INNER",
+        "LEFT",
         "LEFT OUTER",
         "RIGHT OUTER",
         "FULL OUTER",
@@ -53,6 +54,7 @@ class QueryBuilder:
     ]
     _SQLITE_JOIN_TYPES: list = [
         "INNER",
+        "LEFT",
         "LEFT OUTER",
         "CROSS"
     ]
@@ -178,7 +180,7 @@ class QueryBuilder:
         self._error = bool(message)
         self._error_message = message
         if self._print_errors and self._error:
-            print(self._error_message)
+            print("QueryBuilder error:", self._error_message)
 
     def get_params(self) -> tuple:
         return self._params
@@ -611,9 +613,14 @@ class QueryBuilder:
 
     def join(self, table: Union[str, dict] = "", on: Union[str, tuple, list] = (), join_type: str = "INNER"):
         join_type = join_type.upper()
-        if join_type == "" or join_type not in self._SQLITE_JOIN_TYPES:
-            self.set_error(f"Empty join_type or is not allowed in {inspect.stack()[0][3]} method")
-            return self
+        if self._db.get_driver() == 'sqlite':
+            if join_type == "" or join_type not in self._SQLITE_JOIN_TYPES:
+                self.set_error(f"Empty join_type or is not allowed in {inspect.stack()[0][3]} method. Try one of these {self._SQLITE_JOIN_TYPES}")
+                return self
+        else:
+            if join_type == "" or join_type not in self._JOIN_TYPES:
+                self.set_error(f"Empty join_type or is not allowed in {inspect.stack()[0][3]} method. Try one of these {self._JOIN_TYPES}")
+                return self
 
         if not table:
             self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
