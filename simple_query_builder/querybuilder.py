@@ -614,7 +614,7 @@ class QueryBuilder:
 
     def join(self, table: Union[str, dict] = "", on: Union[str, tuple, list] = (), join_type: str = "INNER"):
         join_type = join_type.upper()
-        if self._db.get_driver() == 'sqlite':
+        if self.get_driver() == 'sqlite':
             if join_type == "" or join_type not in self._SQLITE_JOIN_TYPES:
                 self.set_error(f"Empty join_type or is not allowed in {inspect.stack()[0][3]} method. Try one of these {self._SQLITE_JOIN_TYPES}")
                 return self
@@ -699,6 +699,9 @@ class QueryBuilder:
 
     def __str__(self):
         return self.get_sql(False)
+
+    def get_driver(self) -> str:
+        return self._db.get_driver().lower()
 
     def create_view(self, view_name: str, add_exists: bool = True):
         # this method will be moved to another class
