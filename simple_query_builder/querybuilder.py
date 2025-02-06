@@ -670,6 +670,15 @@ class QueryBuilder:
 
         return self
 
+    def union_select_all(self, table: Union[str, list, dict]):
+        if not table:
+            self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
+            return self
+
+        self.union_select(table, True)
+
+        return self
+
     def excepts(self):
         self._concat = True
         self._sql += " EXCEPT "
