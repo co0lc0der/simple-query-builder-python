@@ -652,6 +652,11 @@ class QueryBuilder:
         self._sql += " UNION ALL " if union_all else " UNION "
         return self
 
+    def union_all(self):
+        self._concat = True
+        self._sql += " UNION ALL "
+        return self
+
     def union_select(self, table: Union[str, list, dict], union_all: bool = False):
         if not table:
             self.set_error(f"Empty table in {inspect.stack()[0][3]} method")
