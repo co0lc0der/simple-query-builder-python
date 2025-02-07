@@ -384,6 +384,15 @@ class QueryBuilder:
 
         return self
 
+    def select_distinct(self, table: Union[str, list, dict], fields: Union[str, list, dict] = "*"):
+        if table and fields:
+            self.select(table, fields, True)
+        else:
+            self.set_error(f"Empty table or fields in {inspect.stack()[0][3]} method")
+            return self
+
+        return self
+
     def where(self, where: Union[str, list], addition: str = ""):
         if not where:
             self.set_error(f"Empty where in {inspect.stack()[0][3]} method")
