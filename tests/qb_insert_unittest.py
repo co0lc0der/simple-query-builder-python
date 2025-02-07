@@ -8,6 +8,7 @@ from querybuilder import *
 class QBInsertTestCase(unittest.TestCase):
     def setUp(self):
         self.qb = QueryBuilder(DataBase(), ":memory:")
+        self.maxDiff = None
 
     def test_insert_empty_table(self):
         result = self.qb.insert('', {'param': 'new_value'})

@@ -8,6 +8,7 @@ from querybuilder import *
 class QBViewsTestCase(unittest.TestCase):
     def setUp(self):
         self.qb = QueryBuilder(DataBase(), ":memory:")
+        self.maxDiff = None
 
     def test_create_view_empty_view_name(self):
         result = self.qb.create_view('')
@@ -63,6 +64,9 @@ class QBViewsTestCase(unittest.TestCase):
         self.assertEqual(result.has_error(), False)
         self.assertEqual(result.get_sql(), "DROP VIEW IF EXISTS `users_no_email`")
         self.assertEqual(self.qb.get_params(), ())
+
+    def tearDown(self):
+        pass
 
 
 if __name__ == "__main__":

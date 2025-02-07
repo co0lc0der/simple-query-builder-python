@@ -8,6 +8,7 @@ from querybuilder import *
 class QBDeleteTestCase(unittest.TestCase):
     def setUp(self):
         self.qb = QueryBuilder(DataBase(), ":memory:")
+        self.maxDiff = None
 
     def test_delete_empty_table(self):
         result = self.qb.delete('')
@@ -69,6 +70,9 @@ class QBDeleteTestCase(unittest.TestCase):
         else:
             self.assertEqual(result.get_sql(), "DELETE FROM `users` WHERE (`name` = 'John') LIMIT 1")
         self.assertEqual(result.get_params(), ('John',))
+
+    def tearDown(self):
+        pass
 
 
 if __name__ == "__main__":

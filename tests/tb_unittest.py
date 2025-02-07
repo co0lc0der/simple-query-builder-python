@@ -8,6 +8,7 @@ from simple_query_builder.querybuilder import *
 class TBTestCase(unittest.TestCase):
     def setUp(self):
         self.qb = QueryBuilder(DataBase(), ":memory:")
+        self.maxDiff = None
 
     def test_drop_table_empty_name(self):
         result = self.qb.drop('')
@@ -46,6 +47,9 @@ class TBTestCase(unittest.TestCase):
         self.assertEqual(result.has_error(), False)
         self.assertEqual(result.get_sql(), "TRUNCATE TABLE `users`")
         self.assertEqual(result.get_params(), ())
+
+    def tearDown(self):
+        pass
 
 
 if __name__ == "__main__":
